@@ -1,8 +1,16 @@
 let map;
 let marker;
 
+
 async function initMap() 
 {
+
+    // Create the map div dynamically
+    const mapDiv = document.createElement('div');
+    mapDiv.id = 'my_map';
+    document.body.appendChild(mapDiv);
+    
+
     // This is  the call to the google maps library
     const { Map } = await google.maps.importLibrary('maps');
     // another call to the google maps library
@@ -15,7 +23,7 @@ async function initMap()
         // The center of the map is set to the coordinates of the Papine Area in Kingston, Jamaica
         //center: { lat: 18.0192, lng: -76.7409 },
         zoom: 14,
-        mapId: "938e0829afff5352",   
+        mapId: window.map_id,   
     };
 
     //The map object is created here.
@@ -88,5 +96,8 @@ async function initMap()
 
 }
 
-initMap();
+
+// Ensure the script runs after the page is fully loaded
+window.addEventListener('load', initMap);
+//initMap();
 

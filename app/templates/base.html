@@ -9,10 +9,22 @@
      <link href="{{ url_for('static', filename="css/bootstrap.min.css") }}" rel="stylesheet">
 </head>
 <body>
-    
-    <div class="container">
-        <h1 class="text-primary">Bootstrap is Working!</h1>
-    </div>
-    
-</body>
+    <header>
+        {% include "header.html" %}
+    </header>
+    <main>
+        <div class="container">
+            {% block main %}{% endblock %}
+        </div>
+    </main>
+    <footer>
+        <div class="container">
+            {% include "footer.html" %}
+        </div>
+    </footer>
+
+    <!-- Include all compiled plugins (below), or include individual files as needed -->
+    <script src="{{ url_for('static', filename='js/bootstrap.bundle.min.js') }}"></script>
+    {% block js %} {% endblock%}
+  </body>
 </html>
