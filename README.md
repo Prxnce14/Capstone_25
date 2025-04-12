@@ -5,7 +5,7 @@ This Capstone Project serves as a culmination of technical skills my group membe
 It has now become more wide scale and there is room for improvement. 
 
 ___
-## Setup details
+## Flask API Setup details
 
 ```bash
 $ python -m venv venv (you may need to use python3 instead)
@@ -13,3 +13,25 @@ $ source venv/bin/activate (or .\venv\Scripts\activate on Windows)
 $ pip install -r requirements.txt
 $ flask --app app --debug run
 ```
+
+## vueJS Setup
+
+#### This cretates the package.json file.
+```sh
+npm init -y 
+```
+
+#### This creates the node_modules directory
+```sh
+npm install vue@3
+```
+
+#### Additional cli tools
+```sh
+npm install -g @vue/cli
+```
+
+
+
+
+
