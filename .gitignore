@@ -19,3 +19,9 @@ venv/
 # Environment Variables
 .env
 .flaskenv
+
+#Docker files
+docker-compose.yml
+Dockerfile.backend
+Dockerfile.frontend
+entrypoint.sh

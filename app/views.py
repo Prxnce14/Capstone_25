@@ -1,7 +1,10 @@
 import os
-from . import app
-from flask import render_template, request, redirect, url_for, make_response, jsonify
+from . import app, db
+from flask import render_template, request, redirect, url_for, make_response, jsonify, flash
 from flask_wtf.csrf import generate_csrf
+from app.forms import UsersForm, DriverForm, RestaurantForm
+from app.models import Users
+from werkzeug.security import check_password_hash
 
 
 
@@ -21,12 +24,43 @@ def home():
     return jsonify(message="Welcome to Pelican Eats!")
 
 
-@app.route('/register', methods=['POST', 'GET'])
+@app.route('/api/gen/register', methods=['POST'])
 def register():
-    """Render website's register page."""
+    """Renders the general user registration page."""
+    if request.method =='POST':
+        try:
+            userform = UsersForm()
+            if userform.validate_on_submit():
+
+                print("ready to process the form")
+                uname = userform.username.data
+                pword = userform.password.data
+                fname = userform.firstname.data
+                lname = userform.lastname.data
+                email = userform.email.data
+                phone = userform.phone_number.data        
+                new_user = Users(uname, pword, fname, lname, email, phone, user_type='gen_user')
+                # Check if the username already exists
+                existing_user = Users.query.filter_by(username=uname).first()
+                if existing_user:
+                    return jsonify({"error": "Username already exists"}), 400
+
+                db.session.add(new_user)
+                db.session.commit()
+
+                return jsonify({
+                    "message": "User Successfully added",
+                    "username": uname,
+                })
+
+            else:
+                errors = form_errors(userform)
+                return jsonify({'errors': errors})
+
+        except Exception as e:
+             # Handle any exceptions here
+            return jsonify({'error': str(e)}), 500  # Return JSON response for error
     
-    # return render_template('register.html', name="Pelican Eats")
-    return render_template('about.html', name="Pelican Eats - Register")
 
 
 @app.route('/login', methods=['POST', 'GET'])
@@ -36,16 +70,7 @@ def login():
     # return render_template('login.html', name="Pelican Eats")
     return render_template('about.html', name="Pelican Eats - Login")
 
-# @app.route('/delivery')
-# def locations():
-#     """Render website's locations page."""
-#     myapi_key = os.environ.get('API_KEY')
-#     mymap_id = os.environ.get('MAP_ID')
-#     response = make_response(render_template('index.html', api_key=myapi_key, map_id=mymap_id))
-#     response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
-#     response.headers['Pragma'] = 'no-cache'
-#     response.headers['Expires'] = '0'
-#     return response
+
 
 
 @app.route('/api/map-config', methods=['GET'])
@@ -70,7 +95,7 @@ def get_map_config():
 
 #endpoint for csrf token
 
-@app.route('/api/v1/csrf-token', methods=['GET'])
+@app.route('/api/csrf-token', methods=['GET'])
 def get_csrf():
  return jsonify({'csrf_token': generate_csrf()})
 

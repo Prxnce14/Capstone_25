@@ -3,6 +3,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
 import AboutView from '../views/AboutView.vue'
 import DeliveryView from '../views/DeliveryView.vue'
+import Register_gen_view from '../views/Register_gen_view.vue'
 
 const routes = [
   {
@@ -19,6 +20,11 @@ const routes = [
     path: '/delivery',
     name: 'delivery',
     component: DeliveryView
+  },
+  {
+    path: '/register/personal',
+    name: 'register_general',
+    component: Register_gen_view
   }
 ]
 

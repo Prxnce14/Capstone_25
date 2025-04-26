@@ -1,10 +1,13 @@
 <template>
-    <footer class="mt-5">
-        <div class="foot">
-            <p>Copyright &copy {{ year }} Pelican Eats, Inc All rights reserved..</p>
-        </div>
-    </footer>
+    <div :class="pageSpecificClass">
+        <footer>
+            <div class="foot">
+                <p>Copyright &copy {{ year }} Pelican Eats, Inc All rights reserved.</p>
+            </div>
+        </footer>
+    </div>
 </template>
+  
 
 <script setup>
 import { ref } from "vue";

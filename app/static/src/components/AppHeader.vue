@@ -82,52 +82,44 @@ onMounted(() => {
 </script> -->
   
 <style scoped>
+/* Updated navbar styles */
 .pelican-navbar {
-  background-color:  #FF8C00; /* Dark Orange */
+  background-color: #FF8C00; /* Dark Orange */
   position: fixed;
   top: 0;
   width: 100%;
   z-index: 1000;
 }
+
+/* Add these new styles */
+.container {
+  padding-left: 2rem;  /* Push logo more to the left */
+  padding-right: 2rem; /* Push nav items more to the right */
+}
+
+.navbar-brand {
+  font-size: 1.5rem; /* Increase logo size */
+  color: white !important; /* Ensure logo text is white */
+}
+
+.nav-link, .dropdown-toggle {
+  color: white !important; /* Make ALL navbar links white */
+}
+
+/* Add hover effect for consistency */
+.nav-link:hover, .dropdown-toggle:hover {
+  color: rgba(255, 255, 255, 0.8) !important;
+}
+
+/* Make the dropdown menu align better */
+.dropdown-menu {
+  margin-top: 0.5rem;
+  border-radius: 6px;
+}
+
+/* Style the dropdown items */
+.dropdown-item {
+  padding: 0.5rem 1.5rem;
+}
 </style>
 
-<!-- <template>
-  <nav class="navbar navbar-expand-lg navbar-dark pelican-navbar">
-    <div class="container">
-      <router-link class="navbar-brand" to="/">Pelican Eats</router-link>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <div class="collapse navbar-collapse" id="navbarNav">
-        <ul class="navbar-nav ms-auto">
-          <li class="nav-item">
-            <router-link class="nav-link" to="/about">About</router-link>
-          </li>
-          Conditional navigation based on authentication
-          <template v-if="isAuthenticated">
-            <li class="nav-item">
-              <router-link class="nav-link" to="/profile">My Profile</router-link>
-            </li>
-            <li class="nav-item">
-              <router-link class="nav-link" to="/orders">My Orders</router-link>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="#" @click.prevent="logout">Logout</a>
-            </li>
-          </template>
-          <template v-else>
-            <li class="nav-item">
-              <router-link class="nav-link" to="/register">Register</router-link>
-            </li>
-            <li class="nav-item">
-              <router-link class="nav-link" to="/login">Login</router-link>
-            </li>
-          </template>
-          <li class="nav-item">
-            <router-link class="nav-link" to="/locations">Delivery</router-link>
-          </li>
-        </ul>
-      </div>
-    </div>
-  </nav>
-</template> -->
