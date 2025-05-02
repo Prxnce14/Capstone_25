@@ -28,3 +28,7 @@ entrypoint.sh
 
 # uploads 
 uploads/
+
+
+# logs directory
+logs/
