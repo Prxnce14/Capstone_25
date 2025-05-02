@@ -1,10 +1,15 @@
 import os
-from . import app, db
-from flask import render_template, request, redirect, url_for, make_response, jsonify, flash
+import logging
+from logging.handlers import RotatingFileHandler
+from app import app, db, login_manager, log_security_event
+from flask import render_template, request, redirect, url_for, make_response, jsonify, flash, session
 from flask_wtf.csrf import generate_csrf
-from app.forms import UsersForm, DriverForm, RestaurantForm
+from flask_login import login_user, logout_user, current_user, login_required
+from app.forms import UsersForm, DriverForm, RestaurantForm, LoginForm
 from app.models import Users
+from datetime import datetime, timedelta
 from werkzeug.security import check_password_hash
+from flask_jwt_extended import create_access_token
 
 
 
@@ -48,10 +53,21 @@ def register():
                 db.session.add(new_user)
                 db.session.commit()
 
+                # Log registration event
+                log_security_event(
+                    app.security_logger, 
+                    request, 
+                    'registration_success', 
+                    user_id=new_user.get_id(), 
+                    username=uname,
+                    message="User successfully registered"
+                )
+                
                 return jsonify({
                     "message": "User Successfully added",
                     "username": uname,
                 })
+            
 
             else:
                 errors = form_errors(userform)
@@ -63,13 +79,135 @@ def register():
     
 
 
-@app.route('/login', methods=['POST', 'GET'])
+@app.route('/api/login', methods=['POST'])
 def login():
-    """Render website's login page."""
+    """Renders the website's login page."""
     
-    # return render_template('login.html', name="Pelican Eats")
-    return render_template('about.html', name="Pelican Eats - Login")
+    if request.method == 'POST':
+        try:
+            log_form = LoginForm()
+            if log_form.validate_on_submit():
 
+                print("ready to process the login form")
+
+                uname = log_form.username.data
+                password = log_form.password.data
+                
+
+                # Using your model, query database for a user based on the username
+                # and password submitted. Remember you need to compare the password hash.
+                # Then store the result of that query to a `user` variable so it can be
+                # passed to the login_user() method below. the 2nd usrername holds the value from the form
+
+                # Log login attempt
+                log_security_event(
+                    app.security_logger, 
+                    request, 
+                    'login_attempt', 
+                    username=uname,
+                    message="Login attempt initiated"
+                )
+
+                
+                # Query the database for the user
+                user = Users.query.filter_by(username=uname).first()
+                
+                if user is not None and check_password_hash(user.password, password):
+
+                    # If the user is not blank, meaning if a user was actually found,
+                    # then login the user and create the user session.
+                    # user should be an instance of your `Users class
+                    # Gets user id, load into session
+                    # login_user(user)
+
+                    login_user(user)
+                    
+                    # Log successful login
+                    log_security_event(
+                        app.security_logger, 
+                        request, 
+                        'login_success', 
+                        user_id=user.get_id(), 
+                        username=user.get_username(),
+                        message=f"User successfully logged in"
+                    )
+
+                    # Generate expiration time
+                    timestamp = datetime.utcnow()
+                    exp = timestamp + timedelta(hours=24)
+                    
+                    # Create payload
+                    payload = {
+                        "id": user.get_id(),
+                        "name": user.get_username(),
+                        "user_type": user.user_type,
+                        "exp": exp
+                    }
+
+                    # Generate JWT token
+                    access_token= create_access_token(identity=user.get_id(), additional_claims=payload)
+
+                    response ={
+                        'message': f'{user.get_username()} Successfully logged in' ,
+                        'id': user.get_id() ,
+                        'user_type': user.user_type,
+                        'access_token': access_token,
+                        'redirect': get_redirect_url(user.user_type)
+                    }
+
+                    # Return the token to the client
+                    return  jsonify(response), 200
+                
+                else:
+                    # If the user was not found, then return an error message.
+                    log_security_event(
+                        app.security_logger, 
+                        request, 
+                        'login_failure', 
+                        username=uname,
+                        message=f"Invalid username or password",
+                        level=logging.WARNING
+                    )
+                    return jsonify({"error": "Invalid username or password"}), 401
+            
+            else:
+                errors = form_errors(log_form)
+
+                # Log form valdation failure
+                log_security_event(
+                    app.security_logger, 
+                    request, 
+                    'login_form_validation_failed', 
+                    message=str(errors), 
+                    level=logging.WARNING
+                )
+                return jsonify({'errors': errors})
+            
+        except Exception as e:
+            # Handle any exceptions here
+
+            #Log the exception
+            log_security_event(
+                app.security_logger, 
+                request, 
+                'login_error', 
+                username=uname if 'uname' in locals() else None,
+                message=f"Error during login: {str(e)}",
+                level=logging.ERROR
+            )
+            return jsonify({'error': str(e)}), 500  # Return JSON response for error
+
+
+
+
+def get_redirect_url(user_type):
+    """Return the appropriate redirect URL based on user type"""
+    if user_type == 'gen_user':
+        return 'gen/dashboard'
+    elif user_type == 'driver':
+        return '/driver/dashboard'
+    elif user_type == 'restaurant':
+        return '/restaurant/dashboard'
 
 
 
@@ -137,8 +275,3 @@ def add_header(response):
     response.headers['Cache-Control'] = 'public, max-age=0'
     return response
 
-
-# @app.errorhandler(404)
-# def page_not_found(error):
-#     """Custom 404 page."""
-#     return render_template('404.html'), 404
