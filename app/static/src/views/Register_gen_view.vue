@@ -19,7 +19,7 @@
                     <!-- Alert messages -->
                     <div v-if="message || errors.length > 0" :class="{'alert alert-success': message, 'alert alert-danger': errors.length > 0}" role="alert">
                         <p v-if="message">{{ message }}</p>
-                        <ul v-if="errors">
+                        <ul v-if="errors.length > 0">
                             <li v-for="(error, index) in errors" :key="index">{{ error }}</li>
                         </ul>
                     </div>
@@ -27,37 +27,94 @@
                     <div class="form-fields">
                         <div class="form-group">
                             <label for="username">Username</label>
-                            <input type="text" id="username" name="username" class="form-control" placeholder="Choose a unique username" required/>
+                            <input 
+                                type="text" 
+                                id="username" 
+                                name="username" 
+                                class="form-control" 
+                                placeholder="Choose a unique username" 
+                                v-model="formData.username"
+                                required
+                            />
                         </div>
 
                         <div class="form-group">
                             <label for="password">Password</label>
-                            <input type="password" name="password" class="form-control" placeholder="Password" required />
+                            <input 
+                                type="password" 
+                                name="password" 
+                                class="form-control" 
+                                placeholder="Password" 
+                                v-model="formData.password"
+                                @input="clearPasswordRelatedErrors"
+                                required 
+                            />
                         </div>
 
                         <div class="form-group">
                             <label for="confirmPassword">Confirm Password</label>
-                            <input type="password" id="confirmPassword" name="confirmPassword" class="form-control" placeholder="Password" required/>
+                            <input 
+                                type="password" 
+                                id="confirmPassword" 
+                                name="confirmPassword" 
+                                class="form-control" 
+                                placeholder="Password"
+                                v-model="formData.confirmPassword"
+                                @input="clearPasswordRelatedErrors"
+                                required
+                            />
                         </div>
 
                         <div class="form-group">
                             <label for="firstname">Firstname</label>
-                            <input type="text" name="firstname" class="form-control" placeholder="John" required />
+                            <input 
+                                type="text" 
+                                name="firstname" 
+                                class="form-control" 
+                                placeholder="John" 
+                                v-model="formData.firstname"
+                                @input="validateFieldOnChange('firstname')"
+                                required 
+                            />
                         </div>
 
                         <div class="form-group">
                             <label for="lastname">Lastname</label>
-                            <input type="text" name="lastname" class="form-control" placeholder="Brown" required />
+                            <input 
+                                type="text" 
+                                name="lastname" 
+                                class="form-control" 
+                                placeholder="Brown" 
+                                v-model="formData.lastname"
+                                @input="validateFieldOnChange('lastname')"
+                                required 
+                            />
                         </div>
 
                         <div class="form-group">
                             <label for="email">Email</label>
-                            <input type="email" name="email" class="form-control" placeholder="johnbrown@hotmail.com" required />
+                            <input 
+                                type="email" 
+                                name="email" 
+                                class="form-control" 
+                                placeholder="johnbrown@hotmail.com" 
+                                v-model="formData.email"
+                                @input="validateFieldOnChange('email')"
+                                required 
+                            />
                         </div>
 
                         <div class="form-group">
                             <label for="phone_number">Phone number</label>
-                            <input type="text" name="phone_number" class="form-control" placeholder="658-123-4567" required />
+                            <input 
+                                type="text" 
+                                name="phone_number" 
+                                class="form-control" 
+                                placeholder="658-123-4567" 
+                                v-model="formData.phone_number"
+                                @input="validateFieldOnChange('phone_number')"
+                                required 
+                            />
                         </div>
 
                         <div class="form-group terms-group">
@@ -68,7 +125,9 @@
                         </div>
 
                         <div class="button-container">
-                            <button type="submit" class="signup-button">Sign Up</button>
+                            <button type="submit" class="signup-button" :disabled="isSubmitting">
+                                {{ isSubmitting ? 'Submitting...' : 'Sign Up' }}
+                            </button>
                         </div>
                         
                         <div class="login-link">
@@ -88,14 +147,35 @@
 
 
 
-
 <script setup>
 
-    import {ref, onMounted} from "vue";
+    import {ref, onMounted, reactive, watch} from "vue";
+
+    // Reactive form state
+    const formData = reactive({
+        username: '',
+        password: '',
+        confirmPassword: '',
+        firstname: '',
+        lastname: '',
+        email: '',
+        phone_number: ''
+    });
+
     let csrf_token = ref("");
     let message = ref("");
     let errors = ref([]);
-
+    let isSubmitting = ref(false);
+    
+    // Track which fields have been validated to prevent premature error clearing
+    const fieldValidationState = reactive({
+        firstname: false,
+        lastname: false,
+        email: false,
+        phone_number: false,
+        password: false,
+        confirmPassword: false
+    });
 
     function getCsrfToken() {
         fetch('/api/csrf-token')
@@ -104,65 +184,196 @@
             console.log(data);
             csrf_token.value = data.csrf_token;
         })
+        .catch(error => {
+            console.error("Failed to fetch CSRF token:", error);
+            errors.value.push("Server connection issue. Please try again later.");
+        });
     }
 
     onMounted(() => {
-    getCsrfToken();
+        getCsrfToken();
+        
+        // Set up event listeners to sync form data with the input fields
+        const form = document.getElementById('registerform');
+        if (form) {
+            form.addEventListener('input', (event) => {
+                if (event.target.name && event.target.name in formData) {
+                    formData[event.target.name] = event.target.value;
+                }
+            });
+        }
     });
 
-
-    // Fucntion to validate email format
+    // Function to validate email format
     function validateEmail(email) {
         const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         return re.test(String(email).toLowerCase());
     }
 
+    // Function to validate names (letters, spaces, hyphens, apostrophes)
+    function validateName(name) {
+        // Allow letters, spaces, hyphens, and apostrophes (common in names)
+        const nameRegex = /^[A-Za-z\s\-']+$/;
+        return nameRegex.test(name);
+    }
 
-    // Function to validate password and confirm password match
+    // Function to validate phone number
+    function validatePhone(phone) {
+        // Clear any non-numeric characters for validation
+        const digitsOnly = phone.replace(/\D/g, '');
+        
+        // Check if the input after stripping non-digits has 7-10 digits
+        if (digitsOnly.length < 7 || digitsOnly.length > 10) {
+            return false;
+        }
+        
+        // For display validation, ensure it matches expected formats
+        const phoneRegex = /^(?:\(\d{3}\)\s?\d{3}-\d{4}|\d{3}-\d{3}-\d{4}|\d{3}-\d{4}|\d{7,10})$/;
+        return phoneRegex.test(phone);
+    }
+
+    // Function to validate password strength
+    function validatePasswordStrength(password) {
+        // At least 8 characters, with at least one uppercase, one lowercase, and one number
+        const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
+        return passwordRegex.test(password);
+    }
+    
+    // Function to clear errors when field values change
+    function validateFieldOnChange(fieldName) {
+        // Mark this field as having been validated
+        fieldValidationState[fieldName] = true;
+        
+        // Only validate fields that have been previously validated (had errors)
+        if (!fieldValidationState[fieldName]) return;
+        
+        let isValid = true;
+        
+        switch (fieldName) {
+            case 'firstname':
+            case 'lastname':
+                isValid = validateName(formData[fieldName]);
+                if (!isValid) {
+                    return; // Don't clear errors if still invalid
+                }
+                removeErrorForField(`${fieldName} should only contain letters, spaces, hyphens, or apostrophes`);
+                break;
+                
+            case 'email':
+                isValid = validateEmail(formData.email);
+                if (!isValid) {
+                    return; // Don't clear errors if still invalid
+                }
+                removeErrorForField("Please enter a valid email address");
+                break;
+                
+            case 'phone_number':
+                isValid = validatePhone(formData.phone_number);
+                if (!isValid) {
+                    return; // Don't clear errors if still invalid
+                }
+                removeErrorForField("Please enter a valid phone number (7-10 digits, with or without formatting)");
+                break;
+        }
+    }
+    
+    // Function to clear password-related errors when either password field changes
+    function clearPasswordRelatedErrors() {
+        fieldValidationState.password = true;
+        fieldValidationState.confirmPassword = true;
+        
+        // Check if passwords match now
+        if (formData.password && formData.confirmPassword && 
+            formData.password === formData.confirmPassword) {
+            removeErrorForField("Passwords do not match");
+        }
+        
+        // Check if password meets strength requirements
+        if (formData.password && validatePasswordStrength(formData.password)) {
+            removeErrorForField("Password must be at least 8 characters and include uppercase, lowercase, and numbers");
+        }
+    }
+    
+    // Helper function to remove a specific error from the errors array
+    function removeErrorForField(errorText) {
+        const errorIndex = errors.value.findIndex(error => error === errorText);
+        if (errorIndex !== -1) {
+            errors.value.splice(errorIndex, 1);
+        }
+    }
+
+    // Function to validate the complete form
     function validateForm() {
         errors.value = [];
-        const form = document.querySelector("#registerform");
-        const password = form.querySelector('input[name="password"]').value;
-        const confirmPassword = form.querySelector('input[name="confirmPassword"]').value;
-        const email = form.querySelector('input[name="email"]').value;
-        const phoneNumber = form.querySelector('input[name="phone_number"]').value;
         
-        // Check required fields (add more as needed)
-        if (!password || !confirmPassword || !email) {
+        // Check required fields
+        const requiredFields = ['username', 'password', 'confirmPassword', 'firstname', 'lastname', 'email', 'phone_number'];
+        const missingFields = requiredFields.filter(field => !formData[field]);
+        
+        if (missingFields.length > 0) {
             errors.value.push("Please fill in all required fields");
             return false;
         }
         
+        // Name validation
+        if (!validateName(formData.firstname)) {
+            errors.value.push("First name should only contain letters, spaces, hyphens, or apostrophes");
+            fieldValidationState.firstname = true;
+            return false;
+        }
+        
+        if (!validateName(formData.lastname)) {
+            errors.value.push("Last name should only contain letters, spaces, hyphens, or apostrophes");
+            fieldValidationState.lastname = true;
+            return false;
+        }
+        
         // Password validation
-        if (password !== confirmPassword) {
+        if (formData.password !== formData.confirmPassword) {
             errors.value.push("Passwords do not match");
+            fieldValidationState.password = true;
+            fieldValidationState.confirmPassword = true;
+            return false;
+        }
+        
+        // Password strength check
+        if (!validatePasswordStrength(formData.password)) {
+            errors.value.push("Password must be at least 8 characters and include uppercase, lowercase, and numbers");
+            fieldValidationState.password = true;
             return false;
         }
         
         // Email validation
-        if (!validateEmail(email)) {
+        if (!validateEmail(formData.email)) {
             errors.value.push("Please enter a valid email address");
+            fieldValidationState.email = true;
             return false;
         }
 
-        // Updated phone regex to accept 7-10 digits with or without formatting
-        // Will accept formats like: 1234567, 123-4567, 1234567890, 123-456-7890
-        // - Parentheses format with area code (876)654-1234
-
-        const phoneRegex = /^(?:\(\d{3}\)\d{3}-\d{4}|\d{3}-\d{3}-\d{4}|\d{3}-\d{4}|\d{7,10})$/;
-        if (!phoneRegex.test(phoneNumber)) {
-            errors.value.push("Please enter a valid phone number (7-10 digits, with or without dashes)");
+        // Phone validation
+        if (!validatePhone(formData.phone_number)) {
+            errors.value.push("Please enter a valid phone number (7-10 digits, with or without formatting)");
+            fieldValidationState.phone_number = true;
             return false;
         }
-    
+        
         return errors.value.length === 0;
+    }
+
+    // Function to handle input to sanitize as needed
+    function sanitizeInput(value, type) {
+        if (type === 'phone') {
+            // Allow only digits, parentheses, spaces, and dashes for phone
+            return value.replace(/[^\d\(\)\s\-]/g, '');
+        }
+        // For other fields, we can implement different sanitization as needed
+        return value;
     }
 
     // Function to register a new user
     function register_general() {
         // Clear previous messages
         message.value = "";
-        errors.value = [];
         
         // First, validate the form
         if (!validateForm()) {
@@ -170,8 +381,11 @@
             return;
         }
 
-        let reg_form = document.querySelector("#registerform");
-        let form_data = new FormData(reg_form);
+        isSubmitting.value = true;
+
+        // Create FormData 
+        let form = document.querySelector("#registerform");
+        let form_data = new FormData(form);
 
         // Extract username to use in success message
         const username = form_data.get('username');
@@ -196,29 +410,37 @@
             console.log(data);
             
             // Immediately set success message using the correct username
-            // We use the username from the form data as a fallback
-            message.value = `${data.username || username} you're successfully registered!`;
+            message.value = `${data.username || username}, you're successfully registered!`;
             
             // Clear the message after 10 seconds
             setTimeout(() => {
                 message.value = "";
             }, 10000);
             
-            // Reset form only after success
-            reg_form.reset();
+            // Reset form after success
+            form.reset();
+            
+            // Reset form data object
+            Object.keys(formData).forEach(key => {
+                formData[key] = '';
+            });
+            
+            // Reset validation states
+            Object.keys(fieldValidationState).forEach(key => {
+                fieldValidationState[key] = false;
+            });
         })
         .catch(function (error) {
             console.log(error);
             // Display specific error message
             errors.value.push(error.message);
+        })
+        .finally(() => {
+            isSubmitting.value = false;
         });
     }
 
-    
-
-        
 </script>
-
 
 
 <style >
@@ -372,6 +594,11 @@ h1 {
     background-color: #e67e00;
 }
 
+.signup-button:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+}
+
 .login-link {
     font-size: 0.8rem;
     color: #666;
@@ -433,17 +660,13 @@ h1 {
     }
 }
 
-
-
 /* href link styles */
-
 a {
     color: #FF8C00;
     text-decoration: none;
 }
 
 /* Override footer styles for this page only */
-
 /* Custom footer just for this page */
 .register-footer {
   color: white;
@@ -461,90 +684,4 @@ a {
 footer {
   display: none;
 }
-
 </style>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
