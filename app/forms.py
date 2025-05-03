@@ -2,36 +2,35 @@
 # Add any form classes for Flask-WTF here
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField, FileRequired, FileAllowed
-from wtforms import StringField, TextAreaField, SelectField, PasswordField, HiddenField
+from wtforms import StringField, TextAreaField, SelectField, PasswordField, HiddenField, BooleanField
 from wtforms.validators import InputRequired, Email, DataRequired, length
 
 
 #This is the name that will bbe displayed above your input fields
 
+# Base registration form for all users
+class BaseRegistrationForm(FlaskForm):
+    username = StringField('Username', validators=[InputRequired()])
+    password = PasswordField('Password', validators=[InputRequired()])
+    firstname = StringField('First Name', validators=[InputRequired()])
+    lastname = StringField('Last Name', validators=[InputRequired()])
+    email = StringField('Email', validators=[InputRequired(), Email()])
+    phone_number = StringField('Mobile Number', validators=[InputRequired(), length(min=7, max=15)]) 
+
 
 # Registration Form - General user
 
 
-class UsersForm(FlaskForm):
+class UsersForm(BaseRegistrationForm):
     user_type = HiddenField(default='gen_user')
-    username = StringField('Username ', validators=[InputRequired()])
-    password = PasswordField('Password ', validators=[InputRequired()])
-    firstname = StringField('First Name ', validators=[InputRequired()])
-    lastname = StringField('Last Name ', validators=[InputRequired()])
-    email = StringField('Email', validators=[InputRequired(), Email()])
-    phone_number = StringField('Mobile Number', validators=[InputRequired(), length(min=7, max=15)])
+    
 
 
 #Registration Form - Driver
 
-class DriverForm(FlaskForm):
+class DriverForm(BaseRegistrationForm):
     user_type = HiddenField(default='driver')
-    username = StringField('Username ', validators=[InputRequired()])
-    password = PasswordField('Password ', validators=[InputRequired()])
-    firstname = StringField('First Name ', validators=[InputRequired()])
-    lastname = StringField('Last Name ', validators=[InputRequired()])
-    email = StringField('Email', validators=[InputRequired(), Email()])
-    phone_number = StringField('Mobile Number', validators=[InputRequired(), length(min=7, max=15)])
+    
     
 
 
@@ -69,11 +68,10 @@ class RestaurantForm(FlaskForm):
 # This form will be used for all users General, drivers and restaurant owners.
 
 
-# class LoginForm(FlaskForm):
-#     username = StringField('Username', validators=[InputRequired()])
-#     password = PasswordField('Password', validators=[InputRequired()])
-   
-
+class LoginForm(FlaskForm):
+    username = StringField('Username', validators=[InputRequired()])
+    password = PasswordField('Password', validators=[InputRequired()])
+    remember = BooleanField('Remember Me')  # Optional: remember user session
 
 
 
