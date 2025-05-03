@@ -4,6 +4,7 @@ import HomeView from '../views/HomeView.vue'
 import AboutView from '../views/AboutView.vue'
 import DeliveryView from '../views/DeliveryView.vue'
 import Register_gen_view from '../views/Register_gen_view.vue'
+import LoginView from '../views/LoginView.vue'
 
 const routes = [
   {
@@ -25,6 +26,11 @@ const routes = [
     path: '/register/personal',
     name: 'register_general',
     component: Register_gen_view
+  },
+  {
+    path: '/login',
+    name: 'login',
+    component: LoginView
   }
 ]
 

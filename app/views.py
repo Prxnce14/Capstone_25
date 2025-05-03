@@ -62,7 +62,7 @@ def register():
                     username=uname,
                     message="User successfully registered"
                 )
-                
+
                 return jsonify({
                     "message": "User Successfully added",
                     "username": uname,
@@ -119,7 +119,7 @@ def login():
                     # user should be an instance of your `Users class
                     # Gets user id, load into session
                     # login_user(user)
-
+                    print("user found")
                     login_user(user)
                     
                     # Log successful login
