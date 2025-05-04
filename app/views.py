@@ -3,7 +3,7 @@ from . import app, db
 from flask import render_template, request, redirect, url_for, make_response, jsonify, flash
 from flask_wtf.csrf import generate_csrf
 from app.forms import UsersForm, DriverForm, RestaurantForm
-from app.models import Users
+from app.models import Users, Driver
 from werkzeug.security import check_password_hash
 
 
@@ -61,6 +61,42 @@ def register():
              # Handle any exceptions here
             return jsonify({'error': str(e)}), 500  # Return JSON response for error
     
+@app.route('/api/driver/register', methods=['POST'])
+def driver_register():
+    if request.method =='POST':
+        try:
+            driverform = DriverForm()
+            if driverform.validate_on_submit():
+
+                print("ready to process the form")
+                uname = driverform.username.data
+                pword = driverform.password.data
+                fname = driverform.firstname.data
+                lname = driverform.lastname.data
+                email = driverform.email.data
+                phone = driverform.phone_number.data
+                new_driver = Driver(uname, pword, fname, lname, email, phone, user_type='driver')
+                # Check if the username already exists
+                existing_driver = Driver.query.filter_by(username=uname).first()
+                if existing_driver:
+                    return jsonify({"error": "Username already exists"}),400
+                
+                db.session.add(new_driver)
+                db.session.commit()
+
+                return jsonify({
+                    "message": "Driver Successfully added",
+                    "usernane": uname,
+                })
+            
+            else:
+                errors = form_errors(driverform)
+                return jsonify({'errors': errors})
+        
+        except Exception as e:
+            #Handle any exceptions here
+            return jsonify({'error': str(e)}), 500 #Return JSON response for error
+
 
 
 @app.route('/login', methods=['POST', 'GET'])

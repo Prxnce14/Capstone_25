@@ -4,6 +4,8 @@ import HomeView from '../views/HomeView.vue'
 import AboutView from '../views/AboutView.vue'
 import DeliveryView from '../views/DeliveryView.vue'
 import Register_gen_view from '../views/Register_gen_view.vue'
+import Register_driver_view from '../views/Register_driver_view.vue'
+
 
 const routes = [
   {
@@ -25,7 +27,13 @@ const routes = [
     path: '/register/personal',
     name: 'register_general',
     component: Register_gen_view
+  },
+  {
+    path: '/register/driver',
+    name: 'register_driver',
+    component: Register_driver_view
   }
+
 ]
 
 const router = createRouter({

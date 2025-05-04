@@ -28,3 +28,5 @@ entrypoint.sh
 
 # uploads 
 uploads/
+
+node_modules/
