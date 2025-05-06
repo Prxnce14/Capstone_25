@@ -3,7 +3,7 @@ from . import app, db
 from flask import render_template, request, redirect, url_for, make_response, jsonify, flash
 from flask_wtf.csrf import generate_csrf
 from app.forms import UsersForm, DriverForm, RestaurantForm
-from app.models import Users, Driver
+from app.models import Users, Driver, Restaurant
 from werkzeug.security import check_password_hash
 
 
@@ -61,6 +61,7 @@ def register():
              # Handle any exceptions here
             return jsonify({'error': str(e)}), 500  # Return JSON response for error
     
+    
 @app.route('/api/driver/register', methods=['POST'])
 def driver_register():
     if request.method =='POST':
@@ -96,6 +97,50 @@ def driver_register():
         except Exception as e:
             #Handle any exceptions here
             return jsonify({'error': str(e)}), 500 #Return JSON response for error
+
+
+@app.route('/api/restaurant/register', methods=['POST'])
+def restaurant_register():
+    if request.method == 'POST':
+        try:
+            restaurantform = RestaurantForm()
+            if restaurantform.validate_on_submit():
+
+                print("ready to process the form")
+                uname = restaurantform.username.data
+                pword = restaurantform.password.data
+                fname = restaurantform.firstname.data
+                lname = restaurantform.lastname.data
+                email = restaurantform.email.data
+                phone = restaurantform.phone_number.data
+                store_name = restaurantform.store_name.data
+                store_addr = restaurantform.store_address.data
+                new_restaurant = Restaurant(uname, pword, fname, lname, email, phone, store_name, store_addr, user_type='restaurant')
+
+                existing_restaurant = Restaurant.query.filter_by(username=uname).first()
+                if existing_restaurant:
+                    return jsonify({"error": "Username already exists"}), 400
+                
+                existing_store = Restaurant.query.filter_by(store_name = store_name, store_address=store_addr).first()
+                if existing_store:
+                    return jsonify({"error": "Restauramy with this name and address already exists"}), 400
+                
+                db.session.add(new_restaurant)
+                db.session.commit()
+
+                return jsonify({
+                    "message": "Restaurant Successfully added",
+                    "username": uname,
+                    "store_name": store_name
+                })
+            
+            else:
+                errors = form_errors(restaurantform)
+                return jsonify({'errors': errors})
+        
+        except Exception as e:
+            return jsonify({'errror': str(e)}), 500
+                
 
 
 
