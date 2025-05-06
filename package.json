@@ -1,0 +1,23 @@
+{
+  "name": "test_data",
+  "version": "1.0.0",
+  "description": "This Capstone Project serves as a culmination of technical skills my group members and I have obtained during our respective degrees in the computing department.  \r **Pelican Eats** is a food delivery application that was initially targeted toward the students(commuters and hall residents) and staff of the UWI Mona Campus. \r It has now become more wide scale and there is room for improvement.",
+  "main": "index.js",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "serve": "vite preview",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "vue": "^3.5.13",
+    "vue-router": "^4.5.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^4.6.2",
+    "vite": "^4.5.12"
+  }
+}

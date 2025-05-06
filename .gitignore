@@ -1,2 +1,34 @@
-#Environment variable
+# Files to ignore when adding and committing files to a repository
+.DS_Store
+Thumbs.db
+
+*.py[cod]
+*$py.class
+__pycache__
+
+# virtualenv
+.venv/
+venv/
+
+# PyCharm
+.idea
+
+# VS Code
+.vscode
+
+# Environment Variables
 .env
+.flaskenv
+
+#Docker files
+docker-compose.yml
+Dockerfile.backend
+Dockerfile.frontend
+entrypoint.sh
+
+# uploads 
+uploads/
+
+
+# logs directory
+logs/
