@@ -5,12 +5,14 @@ from app import app, db, login_manager, log_security_event
 from flask import render_template, request, redirect, url_for, make_response, jsonify, flash, session
 from flask_wtf.csrf import generate_csrf
 from flask_login import login_user, logout_user, current_user, login_required
-from app.forms import UsersForm, DriverForm, RestaurantForm, LoginForm
+from app.forms import UsersForm, DriverForm, RestaurantForm, LoginForm, MapForm
 from app.models import Users
 from datetime import datetime, timedelta
 from werkzeug.security import check_password_hash
 from flask_jwt_extended import create_access_token
-
+from app.helpers import convert_to_geojson, get_node_from_location, get_route_segment, haversine, get_nearby_intersections
+from app.helpers import get_traffic_factor, current_time
+from app.locations import a_star
 
 
 
@@ -29,6 +31,8 @@ def home():
     return jsonify(message="Welcome to Pelican Eats!")
 
 
+
+#Registration route for general users
 @app.route('/api/gen/register', methods=['POST'])
 def register():
     """Renders the general user registration page."""
@@ -78,7 +82,7 @@ def register():
             return jsonify({'error': str(e)}), 500  # Return JSON response for error
     
 
-
+#Login route for all users
 @app.route('/api/login', methods=['POST'])
 def login():
     """Renders the website's login page."""
@@ -211,6 +215,7 @@ def get_redirect_url(user_type):
 
 
 
+# Route to rendeer the map page
 @app.route('/api/map-config', methods=['GET'])
 def get_map_config():
     """Return map configuration including API key and map ID."""
@@ -229,6 +234,74 @@ def get_map_config():
     
     return response
     
+
+# Route for the map form
+@app.route('/api/map-form', methods=['POST'])
+def map_form():
+    """Handle the map form submission."""
+    if request.method == 'POST':
+        try:
+            map_form = MapForm()
+            if map_form.validate_on_submit():
+                print("ready to process the map form")
+                
+                # Process the form data here
+                cur_location = map_form.cur_location.data
+                dest_location = map_form.dest_location.data
+
+                # log the attempt of a trip
+                log_security_event(
+                    app.security_logger, 
+                    request, 
+                    'trip_attempt', 
+                    user_id=current_user.get_id() if current_user.is_authenticated else None,
+                    message=f"Trip from {cur_location} to {dest_location} initiated"
+                )
+
+
+                #The functionality of the route rendering can be added here
+                # Convert to node format
+                start_node = get_node_from_location(cur_location)
+                goal_node = get_node_from_location(dest_location)
+                
+                # Run A* algorithm
+                optimal_path = a_star(
+                    start_node, 
+                    goal_node, 
+                    get_map_neighbors, 
+                    map_based_heuristic
+                )
+
+                # Get alternative route by slightly modifying the heuristic
+                alt_path = a_star(
+                    start_node,
+                    goal_node,
+                    get_map_neighbors,
+                    lambda n: map_based_heuristic(n, goal_node) * 1.2
+                )
+
+
+                 # Return paths as GeoJSON for frontend rendering
+                return jsonify({
+                    'main_route': convert_to_geojson(optimal_path),
+                    'alternative_route': convert_to_geojson(alt_path)
+                })
+            
+            else:
+                errors = form_errors(map_form)
+                
+                # Log form validation failure
+                log_security_event(
+                    app.security_logger, 
+                    request, 
+                    'map_form_validation_failed', 
+                    message=str(errors), 
+                    level=logging.WARNING
+                )
+        
+        except Exception as e:
+            return jsonify({'error': str(e)}), 500
+
 
 
 #endpoint for csrf token
@@ -275,3 +348,43 @@ def add_header(response):
     response.headers['Cache-Control'] = 'public, max-age=0'
     return response
 
+
+
+# function for heurisctic
+def map_based_heuristic(node, goal):
+    """
+    Calculate heuristic based on straight-line distance plus traffic factor
+    """
+    # Calculate straight-line distance using haversine formula
+    distance = haversine(
+        (node['latitude'], node['longitude']),
+        (goal['latitude'], goal['longitude'])
+    )
+    
+    # Apply traffic factor based on time of day and historical data
+    traffic_multiplier = get_traffic_factor(node, current_time())
+    
+    return distance * traffic_multiplier
+
+
+
+#fucntion for map neighbors
+def get_map_neighbors(node):
+    """
+    Get neighboring intersections from current position
+    """
+    # Query Google Maps Roads API or cached network data
+    nearby_intersections = get_nearby_intersections(
+        node['latitude'], 
+        node['longitude'],
+        radius=500  # meters
+    )
+    
+    neighbors = []
+    for intersection in nearby_intersections:
+        # Calculate actual road distance/time between points
+        route_info = get_route_segment(node, intersection)
+        cost = route_info['duration']  # or distance
+        neighbors.append((intersection, cost))
+        
+    return neighbors

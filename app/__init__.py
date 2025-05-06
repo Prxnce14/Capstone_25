@@ -127,4 +127,6 @@ def log_security_event(logger, request, event_type, user_id=None, username=None,
 
 
 from app import views
-from app import models  
+from app import models
+from app import locations
+from app import helpers  

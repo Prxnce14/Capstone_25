@@ -74,5 +74,10 @@ class LoginForm(FlaskForm):
     remember = BooleanField('Remember Me')  # Optional: remember user session
 
 
+class MapForm(FlaskForm):
+    cur_location = StringField('Current Location', validators=[InputRequired()])
+    dest_location = StringField('Destination Location', validators=[InputRequired()])
+
+
 
 
