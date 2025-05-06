@@ -116,5 +116,18 @@ class Driver(db.Model):
     
 
 
+class Restaurant(db.Model):
+     __tablename__ = 'restaurant'
 
+     id = db.Column(db.Integer, primary_key = True)
+     user_type = db.Column(db.String(255))
+     password= db.Column(db.String(255))
+     firstname = db.Column(db.String(255))
+     lastname = db.Column(db.String(255))
+     email = db.Column(db.String(255))
+     phone_number = db.Column(db.String(255))
+     store_name = db.Column(db.String(255))
+     store_addr = db.Column(db.String(255))
+
+     created_on = db.Column(db.DateTime())
    
