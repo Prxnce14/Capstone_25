@@ -7,3 +7,4 @@
 2025-05-02 19:59:10 - INFO - [127.0.0.1] - registration_success: Pelican - User successfully registered (User ID: 27)
 2025-05-02 19:59:51 - INFO - [127.0.0.1] - login_attempt: Pelican - Login attempt initiated
 2025-05-02 19:59:53 - INFO - [127.0.0.1] - login_success: Pelican - User successfully logged in (User ID: 27)
+2025-05-07 17:11:53 - INFO - [127.0.0.1] - registration_success: Johndon - Driver successfully registered (User ID: 1)
