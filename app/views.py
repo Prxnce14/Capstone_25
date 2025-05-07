@@ -106,6 +106,16 @@ def driver_register():
                 db.session.add(new_driver)
                 db.session.commit()
 
+                # Log registration event
+                log_security_event(
+                    app.security_logger, 
+                    request, 
+                    'registration_success', 
+                    user_id=new_driver.get_id(), 
+                    username=uname,
+                    message="Driver successfully registered"
+                )
+
                 return jsonify({
                     "message": "Driver Successfully added",
                     "usernane": uname,
@@ -128,17 +138,15 @@ def restaurant_register():
             if restaurantform.validate_on_submit():
 
                 print("ready to process the form")
-                uname = restaurantform.username.data
+                disp_name = restaurantform.display_name.data
                 pword = restaurantform.password.data
-                fname = restaurantform.firstname.data
-                lname = restaurantform.lastname.data
                 email = restaurantform.email.data
                 phone = restaurantform.phone_number.data
                 store_name = restaurantform.store_name.data
                 store_addr = restaurantform.store_address.data
-                new_restaurant = Restaurant(uname, pword, fname, lname, email, phone, store_name, store_addr, user_type='restaurant')
+                new_restaurant = Restaurant(disp_name, pword, email, phone, store_name, store_addr, user_type='restaurant')
 
-                existing_restaurant = Restaurant.query.filter_by(username=uname).first()
+                existing_restaurant = Restaurant.query.filter_by(username=disp_name).first()
                 if existing_restaurant:
                     return jsonify({"error": "Username already exists"}), 400
                 
@@ -149,9 +157,19 @@ def restaurant_register():
                 db.session.add(new_restaurant)
                 db.session.commit()
 
+                # Log registration event
+                log_security_event(
+                    app.security_logger, 
+                    request, 
+                    'registration_success', 
+                    user_id=new_restaurant.get_id(), 
+                    dispplay_name=disp_name,
+                    message="restaurant successfully registered"
+                )
+
                 return jsonify({
                     "message": "Restaurant Successfully added",
-                    "username": uname,
+                    "Public name": disp_name,
                     "store_name": store_name
                 })
             
@@ -179,12 +197,6 @@ def login():
                 uname = log_form.username.data
                 password = log_form.password.data
                 
-
-                # Using your model, query database for a user based on the username
-                # and password submitted. Remember you need to compare the password hash.
-                # Then store the result of that query to a `user` variable so it can be
-                # passed to the login_user() method below. the 2nd usrername holds the value from the form
-
                 # Log login attempt
                 log_security_event(
                     app.security_logger, 
@@ -193,29 +205,35 @@ def login():
                     username=uname,
                     message="Login attempt initiated"
                 )
-
                 
-                # Query the database for the user
+                # Query the database for the user across all user types
                 user = Users.query.filter_by(username=uname).first()
+                driver = Driver.query.filter_by(username=uname).first()
+                restaurant = Restaurant.query.filter_by(display_name=uname).first()
                 
+                # Check if user exists in any of the tables and verify password
                 if user is not None and check_password_hash(user.password, password):
-
-                    # If the user is not blank, meaning if a user was actually found,
-                    # then login the user and create the user session.
-                    # user should be an instance of your `Users class
-                    # Gets user id, load into session
-                    # login_user(user)
-                    print("user found")
-                    login_user(user)
+                    authenticated_user = user
+                elif driver is not None and check_password_hash(driver.password, password):
+                    authenticated_user = driver
+                elif restaurant is not None and check_password_hash(restaurant.password, password):
+                    authenticated_user = restaurant
+                else:
+                    authenticated_user = None
+                
+                if authenticated_user is not None:
+                    # User found and password matches
+                    print(f"{authenticated_user.user_type} found")
+                    login_user(authenticated_user)
                     
                     # Log successful login
                     log_security_event(
                         app.security_logger, 
                         request, 
                         'login_success', 
-                        user_id=user.get_id(), 
-                        username=user.get_username(),
-                        message=f"User successfully logged in"
+                        user_id=authenticated_user.get_id(), 
+                        username=authenticated_user.get_username(),
+                        message=f"{authenticated_user.user_type.capitalize()} successfully logged in"
                     )
 
                     # Generate expiration time
@@ -224,25 +242,25 @@ def login():
                     
                     # Create payload
                     payload = {
-                        "id": user.get_id(),
-                        "name": user.get_username(),
-                        "user_type": user.user_type,
+                        "id": authenticated_user.get_id(),
+                        "name": authenticated_user.get_username(),
+                        "user_type": authenticated_user.user_type,
                         "exp": exp
                     }
 
                     # Generate JWT token
-                    access_token= create_access_token(identity=user.get_id(), additional_claims=payload)
+                    access_token = create_access_token(identity=authenticated_user.get_id(), additional_claims=payload)
 
-                    response ={
-                        'message': f'{user.get_username()} Successfully logged in' ,
-                        'id': user.get_id() ,
-                        'user_type': user.user_type,
+                    response = {
+                        'message': f'{authenticated_user.get_username()} Successfully logged in',
+                        'id': authenticated_user.get_id(),
+                        'user_type': authenticated_user.user_type,
                         'access_token': access_token,
-                        'redirect': get_redirect_url(user.user_type)
+                        'redirect': get_redirect_url(authenticated_user.user_type)
                     }
 
                     # Return the token to the client
-                    return  jsonify(response), 200
+                    return jsonify(response), 200
                 
                 else:
                     # If the user was not found, then return an error message.
@@ -259,7 +277,7 @@ def login():
             else:
                 errors = form_errors(log_form)
 
-                # Log form valdation failure
+                # Log form validation failure
                 log_security_event(
                     app.security_logger, 
                     request, 
@@ -272,7 +290,7 @@ def login():
         except Exception as e:
             # Handle any exceptions here
 
-            #Log the exception
+            # Log the exception
             log_security_event(
                 app.security_logger, 
                 request, 
@@ -282,7 +300,6 @@ def login():
                 level=logging.ERROR
             )
             return jsonify({'error': str(e)}), 500  # Return JSON response for error
-
 
 
 
