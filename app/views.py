@@ -8,6 +8,7 @@ from flask_login import login_user, logout_user, current_user, login_required
 from app.forms import UsersForm, DriverForm, RestaurantForm, LoginForm, MapForm
 from app.models import Users
 from datetime import datetime, timedelta
+from app.models import Users, Driver, Restaurant
 from werkzeug.security import check_password_hash
 from flask_jwt_extended import create_access_token
 from app.helpers import convert_to_geojson, get_node_from_location, get_route_segment, haversine, get_nearby_intersections
@@ -81,6 +82,87 @@ def register():
              # Handle any exceptions here
             return jsonify({'error': str(e)}), 500  # Return JSON response for error
     
+    
+@app.route('/api/driver/register', methods=['POST'])
+def driver_register():
+    if request.method =='POST':
+        try:
+            driverform = DriverForm()
+            if driverform.validate_on_submit():
+
+                print("ready to process the form")
+                uname = driverform.username.data
+                pword = driverform.password.data
+                fname = driverform.firstname.data
+                lname = driverform.lastname.data
+                email = driverform.email.data
+                phone = driverform.phone_number.data
+                new_driver = Driver(uname, pword, fname, lname, email, phone, user_type='driver')
+                # Check if the username already exists
+                existing_driver = Driver.query.filter_by(username=uname).first()
+                if existing_driver:
+                    return jsonify({"error": "Username already exists"}),400
+                
+                db.session.add(new_driver)
+                db.session.commit()
+
+                return jsonify({
+                    "message": "Driver Successfully added",
+                    "usernane": uname,
+                })
+            
+            else:
+                errors = form_errors(driverform)
+                return jsonify({'errors': errors})
+        
+        except Exception as e:
+            #Handle any exceptions here
+            return jsonify({'error': str(e)}), 500 #Return JSON response for error
+
+
+@app.route('/api/restaurant/register', methods=['POST'])
+def restaurant_register():
+    if request.method == 'POST':
+        try:
+            restaurantform = RestaurantForm()
+            if restaurantform.validate_on_submit():
+
+                print("ready to process the form")
+                uname = restaurantform.username.data
+                pword = restaurantform.password.data
+                fname = restaurantform.firstname.data
+                lname = restaurantform.lastname.data
+                email = restaurantform.email.data
+                phone = restaurantform.phone_number.data
+                store_name = restaurantform.store_name.data
+                store_addr = restaurantform.store_address.data
+                new_restaurant = Restaurant(uname, pword, fname, lname, email, phone, store_name, store_addr, user_type='restaurant')
+
+                existing_restaurant = Restaurant.query.filter_by(username=uname).first()
+                if existing_restaurant:
+                    return jsonify({"error": "Username already exists"}), 400
+                
+                existing_store = Restaurant.query.filter_by(store_name = store_name, store_address=store_addr).first()
+                if existing_store:
+                    return jsonify({"error": "Restauramy with this name and address already exists"}), 400
+                
+                db.session.add(new_restaurant)
+                db.session.commit()
+
+                return jsonify({
+                    "message": "Restaurant Successfully added",
+                    "username": uname,
+                    "store_name": store_name
+                })
+            
+            else:
+                errors = form_errors(restaurantform)
+                return jsonify({'errors': errors})
+        
+        except Exception as e:
+            return jsonify({'errror': str(e)}), 500
+                
+
 
 #Login route for all users
 @app.route('/api/login', methods=['POST'])

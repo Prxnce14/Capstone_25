@@ -1,0 +1,21 @@
+
+#my_map
+{
+    /*height: 100%;*/
+    height: 400px; 
+    width: 100%;
+
+}
+
+html, body 
+{
+    height: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+
+.foot
+{
+    text-align: center;
+}
