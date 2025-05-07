@@ -37,10 +37,8 @@ class DriverForm(BaseRegistrationForm):
 #Registration Form - Restaurant
 class RestaurantForm(FlaskForm):
     user_type = HiddenField(default='restaurant')
-    username = StringField('Username', validators=[InputRequired()])
+    display_name = StringField('Public Display Name', validators=[InputRequired()])
     password = PasswordField('Password ', validators=[InputRequired()])
-    firstname = StringField('First Name', validators=[InputRequired()])
-    lastname = StringField('Last Name', validators=[InputRequired()])
     email = StringField('Email', validators=[InputRequired(), Email()])
     phone_number = StringField('Mobile Number', validators=[InputRequired(), length(min=7, max=15)])
     store_name = StringField('Restaurant Name ', validators=[InputRequired()])
