@@ -53,6 +53,15 @@ def register():
                 # Check if the username already exists
                 existing_user = Users.query.filter_by(username=uname).first()
                 if existing_user:
+                    log_security_event(
+                        app.security_logger, 
+                        request, 
+                        'registration_failure', 
+                        username=uname,
+                        message=f"Existing username: {uname}",
+                        level=logging.WARNING
+                    )
+
                     return jsonify({"error": "Username already exists"}), 400
 
                 db.session.add(new_user)
@@ -76,10 +85,30 @@ def register():
 
             else:
                 errors = form_errors(userform)
+
+                # log Users form validation failure
+                log_security_event(
+                    app.security_logger, 
+                    request, 
+                    'user_form_validation_failed',
+                    message=str(errors), 
+                    level=logging.WARNING
+                )
+
                 return jsonify({'errors': errors})
 
         except Exception as e:
-             # Handle any exceptions here
+            # Handle any exceptions here
+
+            # Log the exception
+            log_security_event(
+                app.security_logger, 
+                request, 
+                'registration_error', 
+                username=uname if 'uname' in locals() else None,
+                message=f"Error during user registration: {str(e)}",
+                level=logging.ERROR
+            )
             return jsonify({'error': str(e)}), 500  # Return JSON response for error
     
     
@@ -123,10 +152,30 @@ def driver_register():
             
             else:
                 errors = form_errors(driverform)
+
+                #log driver form validation failure
+                log_security_event(
+                    app.security_logger, 
+                    request, 
+                    'driver_form_validation_failed',
+                    message=str(errors), 
+                    level=logging.WARNING
+                )
                 return jsonify({'errors': errors})
         
         except Exception as e:
             #Handle any exceptions here
+
+            # Log the exception
+            log_security_event(
+                app.security_logger, 
+                request, 
+                'registration_error', 
+                username=uname if 'uname' in locals() else None,
+                message=f"Error during driver registration: {str(e)}",
+                level=logging.ERROR
+            )
+                
             return jsonify({'error': str(e)}), 500 #Return JSON response for error
 
 
@@ -148,7 +197,7 @@ def restaurant_register():
 
                 existing_restaurant = Restaurant.query.filter_by(username=disp_name).first()
                 if existing_restaurant:
-                    return jsonify({"error": "Username already exists"}), 400
+                    return jsonify({"error": "Display name already exists"}), 400
                 
                 existing_store = Restaurant.query.filter_by(store_name = store_name, store_address=store_addr).first()
                 if existing_store:
@@ -175,10 +224,31 @@ def restaurant_register():
             
             else:
                 errors = form_errors(restaurantform)
+
+                # log restaurant form validation failure
+                log_security_event(
+                    app.security_logger, 
+                    request, 
+                    'registration_form_validation_failed',
+                    message=str(errors), 
+                    level=logging.WARNING
+                )
                 return jsonify({'errors': errors})
         
         except Exception as e:
-            return jsonify({'errror': str(e)}), 500
+
+            #log the exception
+
+            log_security_event(
+                app.security_logger, 
+                request, 
+                'registration_error', 
+                display_name=disp_name if 'disp_name' in locals() else None,
+                message=f"Error during restaurant registration: {str(e)}",
+                level=logging.ERROR
+            )
+
+            return jsonify({'error': str(e)}), 500
                 
 
 
