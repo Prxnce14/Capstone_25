@@ -147,7 +147,7 @@ def driver_register():
 
                 return jsonify({
                     "message": "Driver Successfully added",
-                    "usernane": uname,
+                    "username": uname,
                 })
             
             else:
@@ -195,7 +195,7 @@ def restaurant_register():
                 store_addr = restaurantform.store_address.data
                 new_restaurant = Restaurant(disp_name, pword, email, phone, store_name, store_addr, user_type='restaurant')
 
-                existing_restaurant = Restaurant.query.filter_by(username=disp_name).first()
+                existing_restaurant = Restaurant.query.filter_by(display_name=disp_name).first()
                 if existing_restaurant:
                     return jsonify({"error": "Display name already exists"}), 400
                 
@@ -212,13 +212,13 @@ def restaurant_register():
                     request, 
                     'registration_success', 
                     user_id=new_restaurant.get_id(), 
-                    dispplay_name=disp_name,
+                    username=new_restaurant.get_username(),
                     message="restaurant successfully registered"
                 )
 
                 return jsonify({
                     "message": "Restaurant Successfully added",
-                    "Public name": disp_name,
+                    "Public name": new_restaurant.get_username(),
                     "store_name": store_name
                 })
             
@@ -243,7 +243,7 @@ def restaurant_register():
                 app.security_logger, 
                 request, 
                 'registration_error', 
-                display_name=disp_name if 'disp_name' in locals() else None,
+                username=disp_name if 'disp_name' in locals() else None,
                 message=f"Error during restaurant registration: {str(e)}",
                 level=logging.ERROR
             )

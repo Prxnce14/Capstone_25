@@ -5,7 +5,7 @@ import AboutView from '../views/AboutView.vue'
 import DeliveryView from '../views/DeliveryView.vue'
 import Register_gen_view from '../views/Register_gen_view.vue'
 import LoginView from '../views/LoginView.vue'
-import Register_driver_view from '../views/Register_driver_view.vue'
+import Register_driver_view from '../views/register_driver_view.vue'
 import Register_restaurant_view from '../views/Register_restaurant_view.vue'
 
 
