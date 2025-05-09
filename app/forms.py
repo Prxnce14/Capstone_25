@@ -74,5 +74,12 @@ class LoginForm(FlaskForm):
     remember = BooleanField('Remember Me')  # Optional: remember user session
 
 
+class PreferenceForm(FlaskForm):
+    foodtype = SelectField('food type',validators=[DataRequired()], min_entries=1)
+    dietaryrestrictions= SelectField('Dietary Restrictions',validators=[DataRequired()])
+    spicelevel = SelectField('SpiceLevel', choices=[(1, 'Mild'), (2, 'Medium'), (3, 'Spicy'), (4, 'Very Spicy'), (5, 'Extreme')],
+                        validators=[DataRequired()], default=3)
+    budgetoptions = SelectField('Budget',validators=[DataRequired()])
+    ordertimes = SelectField('OrderTimes',validators=[DataRequired()])
 
 

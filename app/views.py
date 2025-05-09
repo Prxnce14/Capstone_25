@@ -275,3 +275,131 @@ def add_header(response):
     response.headers['Cache-Control'] = 'public, max-age=0'
     return response
 
+@app.route('/api/preferences', methods=['POST'])
+def save_preferences():
+    """save user preferences from the quiz"""
+    try:
+        data = request.json
+        user_id = data.get('userName', str(datetime.now().timestamp()))  # Generate ID if not provided
+        
+        # Validate input data
+        required_fields = ['foodType', 'dietaryRestrictions', 'spiceLevels', 'budget', 'orderTimes']
+        for field in required_fields:
+            if field not in data:
+                return jsonify({'error': f'Missing required field: {field}'}), 400
+        
+        # Store preferences
+        PREFERENCES_DB[user_id] = {
+            'foodType': data['foodType'],
+            'dietaryRestrictions': data['dietaryRestrictions'],
+            'spiceLevels': data['spiceLevels'],
+            'budget': data['budget'],
+            'orderTimes': data['orderTimes'],
+            'created_at': datetime.now().isoformat()
+        }
+        
+        # Generate initial recommendations based on preferences
+        recommendations = generate_recommendations(user_id)
+        
+        return jsonify({
+            'success': True,
+            'userId': user_id,
+            'message': 'Preferences saved successfully',
+            'initialRecommendations': recommendations
+        })
+    
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/preferences/<user_id>', methods=['GET'])
+def get_preferences(user_id):
+    """Get user preferences by user ID"""
+    if user_id not in PREFERENCES_DB:
+        return jsonify({'error': 'User not found'}), 404
+    
+    return jsonify(PREFERENCES_DB[user_id])
+
+
+def generate_recommendations(user_id):
+    """
+    Generate food recommendations based on user preferences and popularity
+    using content-based filtering
+    """
+    if user_id not in PREFERENCES_DB:
+        return []
+    
+    user_prefs = PREFERENCES_DB[user_id]
+    
+    # Extract dietary restrictions that are high priority
+    high_priority_restrictions = [
+        r['name'].lower() for r in user_prefs['dietaryRestrictions'] 
+        if r['priority']
+    ]
+    
+    # Extract all dietary restrictions
+    all_restrictions = [
+        r['name'].lower() for r in user_prefs['dietaryRestrictions']
+    ]
+    
+    # Get user's flavor preferences
+    spice_preference = user_prefs['spiceLevels']['spiceLevel']
+    healthy_preference = user_prefs['spiceLevels']['healthyLevel']
+    budgetOptions = user_prefs['budget']
+    
+    # Score each food item based on user preferences
+    scored_items = []
+    for item in FOOD_DB['items']:
+        # Skip items that violate high priority restrictions
+        if high_priority_restrictions:
+            # Check if any required dietary tag is missing
+            required_tags = []
+            if 'vegetarian' in high_priority_restrictions:
+                required_tags.append('vegetarian')
+            if 'vegan' in high_priority_restrictions:
+                required_tags.append('vegan')
+            if 'gluten-free' in high_priority_restrictions:
+                required_tags.append('gluten-free')
+            
+            # If any required tag is missing, skip this item
+            if any(tag not in item['dietary_tags'] for tag in required_tags):
+                continue
+        
+        # Calculate match score
+        score = 0
+        
+        # Popularity factor (0-100)
+        score += item['popularity'] * 0.3
+        
+        # Spice level match (0-5)
+        spice_match = 5 - abs(item['spice_level'] - spice_preference)
+        score += spice_match * 10
+        
+        # Healthy level match (0-5)
+        health_match = 5 - abs(item['healthy_level'] - healthy_preference)
+        score += health_match * 10
+        
+        # Budget match
+        if item['price_category'] == budgetOptions:
+            score += 20
+        
+        # Boost score for liked cuisines (if we had that data)
+        # This would come from the swipe data potentially
+        if item['name'] in user_prefs['foodType']:
+            score += 50
+        
+        scored_items.append({
+            'id': item['id'],
+            'name': item['name'],
+            'cuisine': item['cuisine'],
+            'score': score,
+            'price_category': item['price_category'],
+            'dietary_tags': item['dietary_tags']
+        })
+    
+    # Sort by score and return top recommendations
+    recommendations = sorted(scored_items, key=lambda x: x['score'], reverse=True)
+    return recommendations[:10]
+
+if __name__ == '__main__':
+    # For development - would use a proper WSGI server in production
+    app.run(debug=True, port=5000)

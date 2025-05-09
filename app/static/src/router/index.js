@@ -5,6 +5,7 @@ import AboutView from '../views/AboutView.vue'
 import DeliveryView from '../views/DeliveryView.vue'
 import Register_gen_view from '../views/Register_gen_view.vue'
 import LoginView from '../views/LoginView.vue'
+import PreferenceForm from '..views/PreferenceForm.vue'
 
 const routes = [
   {
@@ -31,6 +32,11 @@ const routes = [
     path: '/login',
     name: 'login',
     component: LoginView
+  },
+  {
+    path: '/preference',
+    name: 'preference',
+    component: PreferenceForm
   }
 ]
 

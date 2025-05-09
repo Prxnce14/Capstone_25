@@ -78,6 +78,13 @@
             <p>Copyright © {{ new Date().getFullYear() }} Pelican Eats, Inc All rights reserved.</p>
         </div>
 
+        <!-- Food Preference Quiz (shown after successful login) -->
+    <food-preference-quiz 
+      v-if="showQuiz" 
+      @completed="handleQuizCompleted" 
+      @close="navigateToDashboard" 
+    />
+
     </div>
 </template>
 

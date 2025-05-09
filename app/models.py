@@ -29,8 +29,6 @@ class Users(db.Model):
     )
 
     
-
-
     def __init__(self, uname, pword, fname, lname, em, phone, user_type='gen_user'):
         self.username = uname
         self.password = generate_password_hash(pword, method='pbkdf2:sha256')
@@ -61,3 +59,5 @@ class Users(db.Model):
         
     def __repr__(self):
         return '<User %r>' % self.username
+    
+    
