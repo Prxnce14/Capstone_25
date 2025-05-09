@@ -169,4 +169,39 @@ class Restaurant(db.Model):
         
     def __repr__(self):
         return '<Restaurant %r>' % self.store_name
+
+class Product(db.Model):
+    __tablename__ = 'products'
     
+    id = db.Column(db.Integer, primary_key=True)
+    restaurant_id = db.Column(db.Integer, nullable=False)
+    name = db.Column(db.String(100), nullable=False)
+    price = db.Column(db.Float, nullable=False)
+    quantity = db.Column(db.Integer, nullable=False)
+    image_url = db.Column(db.String(255))
+    description = db.Column(db.Text)
+    category = db.Column(db.String(50))
+    is_vegetarian = db.Column(db.Boolean, default=False)
+    is_vegan = db.Column(db.Boolean, default=False)
+    is_gluten_free = db.Column(db.Boolean, default=False)
+    is_featured = db.Column(db.Boolean, default=False)
+    discount_percentage = db.Column(db.Float, default=0)
+    minimum_stock = db.Column(db.Integer, default=0)
+    
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "restaurant_id": self.restaurant_id,
+            "name": self.name,
+            "price": self.price,
+            "quantity": self.quantity,
+            "image_url": self.image_url,
+            "description": self.description,
+            "category": self.category,
+            "is_vegetarian": self.is_vegetarian,
+            "is_vegan": self.is_vegan,
+            "is_gluten_free": self.is_gluten_free,
+            "is_featured": self.is_featured,
+            "discount_percentage": self.discount_percentage,
+            "minimum_stock": self.minimum_stock
+        }

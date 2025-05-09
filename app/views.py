@@ -2,9 +2,11 @@ import os
 from . import app, db
 from flask import render_template, request, redirect, url_for, make_response, jsonify, flash
 from flask_wtf.csrf import generate_csrf
-from app.forms import UsersForm, DriverForm, RestaurantForm
-from app.models import Users, Driver, Restaurant
+from app.forms import UsersForm, DriverForm, RestaurantForm, RestaurantProduct
+from app.models import Users, Driver, Restaurant, Product
 from werkzeug.security import check_password_hash
+from werkzeug.utils import secure_filename
+import uuid
 
 
 
@@ -61,7 +63,7 @@ def register():
              # Handle any exceptions here
             return jsonify({'error': str(e)}), 500  # Return JSON response for error
     
-    
+
 @app.route('/api/driver/register', methods=['POST'])
 def driver_register():
     if request.method =='POST':
@@ -123,7 +125,7 @@ def restaurant_register():
                 
                 existing_store = Restaurant.query.filter_by(store_name = store_name, store_address=store_addr).first()
                 if existing_store:
-                    return jsonify({"error": "Restauramy with this name and address already exists"}), 400
+                    return jsonify({"error": "Restaurant with this name and address already exists"}), 400
                 
                 db.session.add(new_restaurant)
                 db.session.commit()
@@ -141,8 +143,72 @@ def restaurant_register():
         except Exception as e:
             return jsonify({'errror': str(e)}), 500
                 
+#Add Product
 
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+@app.route('/api/restaurant/products', methods=['POST'])
+def create_product():
+    try:
+        # Use WTForms to validate the form data
+        form = RestaurantProduct(request.form)
+        
+        # For file uploads, we need to add it manually since it's not part of request.form
+        if 'image' in request.files:
+            form.image_file.data = request.files['image']
+        
+        if form.validate():
+            # Handle image upload
+            image_url = form.image_url.data
+            if form.image_file.data and allowed_file(form.image_file.data.filename):
+                filename = secure_filename(form.image_file.data.filename)
+                unique_name = f"{uuid.uuid4().hex}_{filename}"
+                image_path = os.path.join(app.config['UPLOAD_FOLDER'], unique_name)
+                form.image_file.data.save(image_path)
+                image_url = f"/uploads/{unique_name}"
+            
+            # Create a new Product (not RestaurantProduct which is the form)
+            new_product = Product(
+                restaurant_id=form.restaurant_id.data,
+                name=form.name.data,
+                price=form.price.data,
+                quantity=form.quantity.data,
+                image_url=image_url,
+                description=form.description.data if hasattr(form, 'description') else None,
+                category=form.category.data if hasattr(form, 'category') else None,
+                is_vegetarian=form.is_vegetarian.data if hasattr(form, 'is_vegetarian') else False,
+                is_vegan=form.is_vegan.data if hasattr(form, 'is_vegan') else False,
+                is_gluten_free=form.is_gluten_free.data if hasattr(form, 'is_gluten_free') else False,
+                is_featured=form.is_featured.data if hasattr(form, 'is_featured') else False,
+                discount_percentage=form.discount_percentage.data if hasattr(form, 'discount_percentage') else 0,
+                minimum_stock=form.minimum_stock.data if hasattr(form, 'minimum_stock') else 0
+            )
+            
+            db.session.add(new_product)
+            db.session.commit()
+            
+            return jsonify({
+                'message': 'Product created successfully', 
+                'product': new_product.to_dict()
+            }), 201
+        else:
+            return jsonify({'error': 'Validation failed', 'errors': form.errors}), 400
+            
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+# DELETE A PRODUCT
+
+@app.route('/api/restaurant/products/<int:product_id>', methods=['DELETE'])
+def delete_product(product_id):
+    product = RestaurantProduct.query.get_or_404(product_id)
+    db.session.delete(product)
+    db.session.commit()
+    return jsonify({'message': 'Product deleted successfully'}), 200
 
 @app.route('/login', methods=['POST', 'GET'])
 def login():

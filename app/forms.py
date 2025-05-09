@@ -2,8 +2,11 @@
 # Add any form classes for Flask-WTF here
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField, FileRequired, FileAllowed
-from wtforms import StringField, TextAreaField, SelectField, PasswordField, HiddenField
-from wtforms.validators import InputRequired, Email, DataRequired, length
+from wtforms import StringField, TextAreaField, SelectField, PasswordField, HiddenField, FloatField, IntegerField, TextAreaField, SelectField, BooleanField
+from wtforms.validators import InputRequired, Email, DataRequired, length, NumberRange, Optional, URL
+
+
+
 
 
 #This is the name that will bbe displayed above your input fields
@@ -46,6 +49,41 @@ class RestaurantForm(FlaskForm):
     phone_number = StringField('Mobile Number', validators=[InputRequired(), length(min=7, max=15)])
     store_name = StringField('Restaurant Name ', validators=[InputRequired()])
     store_address = StringField('Restaurant Address ', validators=[InputRequired()])
+
+class RestaurantProduct(FlaskForm):
+    name = StringField('Product Name', validators=[InputRequired(), length(min=2, max=100)])
+    price = FloatField('Price', validators=[InputRequired(), NumberRange(min=0.01)])
+    quantity = IntegerField('Quantity', validators=[InputRequired(), NumberRange(min=0)])
+    image_url = StringField('Image URL', validators=[Optional(), URL()])
+    
+    # File upload alternative for image
+    image_file = FileField('Upload Image', validators=[
+        Optional(),
+        FileAllowed(['jpg', 'jpeg', 'png'], 'Images only!')
+    ])
+    
+    description = TextAreaField('Description', validators=[Optional(), length(max=500)])
+    category = SelectField('Category', validators=[InputRequired()], 
+                          choices=[
+                              ('appetizer', 'Appetizer'),
+                              ('main_course', 'Main Course'),
+                              ('dessert', 'Dessert'),
+                              ('beverage', 'Beverage'),
+                              ('side', 'Side Dish'),
+                              ('special', 'Daily Special')
+                          ])
+    
+    is_vegetarian = BooleanField('Vegetarian')
+    is_vegan = BooleanField('Vegan')
+    is_gluten_free = BooleanField('Gluten Free')
+    
+    # For special deals or featured items
+    is_featured = BooleanField('Feature on Homepage')
+    discount_percentage = FloatField('Discount (%)', validators=[Optional(), NumberRange(min=0, max=100)])
+    
+    # For inventory management
+    minimum_stock = IntegerField('Minimum Stock Alert', validators=[Optional(), NumberRange(min=0)])
+
     
 #these are the fields for when the user is logged in and wants to update their profile
 # class UpdateuserForm(FlaskForm):
