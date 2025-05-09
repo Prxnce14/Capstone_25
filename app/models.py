@@ -121,10 +121,8 @@ class Restaurant(db.Model):
 
     id = db.Column(db.Integer, primary_key = True)
     user_type = db.Column(db.String(255))
-    username = db.Column(db.String(255))
+    display_name = db.Column(db.String(255))
     password= db.Column(db.String(255))
-    firstname = db.Column(db.String(255))
-    lastname = db.Column(db.String(255))
     email = db.Column(db.String(255))
     phone_number = db.Column(db.String(255))
     store_name = db.Column(db.String(255))
@@ -133,15 +131,13 @@ class Restaurant(db.Model):
      
      # Add named constraints
     __table_args__ = (
-        UniqueConstraint('username', name='uq_restaurant_username'),
+        UniqueConstraint('display_name', name='uq_restaurant_displayname'),
         UniqueConstraint('store_name', 'store_address', name='uq_resturant_name_address'),
      )
 
-    def __init__(self, uname, pword, fname, lname, em, phone, store_name, store_addr, user_type='restaurant'):
-        self.username = uname
+    def __init__(self, dpname, pword, em, phone, store_name, store_addr, user_type='restaurant'):
+        self.display_name = dpname
         self.password = generate_password_hash(pword, method='pbkdf2:sha256')
-        self.firstname = fname
-        self.lastname = lname
         self.email = em
         self.phone_number = phone
         self.store_name = store_name
@@ -165,7 +161,7 @@ class Restaurant(db.Model):
             return str(self.id)  # python 3 support
         
     def get_username(self):
-        return self.username
+        return self.display_name
         
     def __repr__(self):
         return '<Restaurant %r>' % self.store_name

@@ -81,14 +81,6 @@ goal_node = 'F'
 path = a_star(start_node, goal_node, example_neighbors, example_heuristic)
 
 if path:
-    pass
-    #print(f"Path from {start_node} to {goal_node}: {path}")
+    print(f"Path from {start_node} to {goal_node}: {path}")
 else:
-    pass
-    #print(f"No path found from {start_node} to {goal_node}")
-
-
-
-
-
-
+    print(f"No path found from {start_node} to {goal_node}")

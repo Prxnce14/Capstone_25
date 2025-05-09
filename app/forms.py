@@ -11,40 +11,37 @@ from wtforms.validators import InputRequired, Email, DataRequired, length, Numbe
 
 #This is the name that will bbe displayed above your input fields
 
+# Base registration form for all users
+class BaseRegistrationForm(FlaskForm):
+    username = StringField('Username', validators=[InputRequired()])
+    password = PasswordField('Password', validators=[InputRequired()])
+    firstname = StringField('First Name', validators=[InputRequired()])
+    lastname = StringField('Last Name', validators=[InputRequired()])
+    email = StringField('Email', validators=[InputRequired(), Email()])
+    phone_number = StringField('Mobile Number', validators=[InputRequired(), length(min=7, max=15)]) 
+
 
 # Registration Form - General user
 
 
-class UsersForm(FlaskForm):
+class UsersForm(BaseRegistrationForm):
     user_type = HiddenField(default='gen_user')
-    username = StringField('Username ', validators=[InputRequired()])
-    password = PasswordField('Password ', validators=[InputRequired()])
-    firstname = StringField('First Name ', validators=[InputRequired()])
-    lastname = StringField('Last Name ', validators=[InputRequired()])
-    email = StringField('Email', validators=[InputRequired(), Email()])
-    phone_number = StringField('Mobile Number', validators=[InputRequired(), length(min=7, max=15)])
+    
 
 
 #Registration Form - Driver
 
-class DriverForm(FlaskForm):
+class DriverForm(BaseRegistrationForm):
     user_type = HiddenField(default='driver')
-    username = StringField('Username ', validators=[InputRequired()])
-    password = PasswordField('Password ', validators=[InputRequired()])
-    firstname = StringField('First Name ', validators=[InputRequired()])
-    lastname = StringField('Last Name ', validators=[InputRequired()])
-    email = StringField('Email', validators=[InputRequired(), Email()])
-    phone_number = StringField('Mobile Number', validators=[InputRequired(), length(min=7, max=15)])
+    
     
 
 
 #Registration Form - Restaurant
 class RestaurantForm(FlaskForm):
     user_type = HiddenField(default='restaurant')
-    username = StringField('Username', validators=[InputRequired()])
+    display_name = StringField('Public Display Name', validators=[InputRequired()])
     password = PasswordField('Password ', validators=[InputRequired()])
-    firstname = StringField('First Name', validators=[InputRequired()])
-    lastname = StringField('Last Name', validators=[InputRequired()])
     email = StringField('Email', validators=[InputRequired(), Email()])
     phone_number = StringField('Mobile Number', validators=[InputRequired(), length(min=7, max=15)])
     store_name = StringField('Restaurant Name ', validators=[InputRequired()])
@@ -109,11 +106,15 @@ class RestaurantProduct(FlaskForm):
 # This form will be used for all users General, drivers and restaurant owners.
 
 
-# class LoginForm(FlaskForm):
-#     username = StringField('Username', validators=[InputRequired()])
-#     password = PasswordField('Password', validators=[InputRequired()])
-   
+class LoginForm(FlaskForm):
+    username = StringField('Username', validators=[InputRequired()])
+    password = PasswordField('Password', validators=[InputRequired()])
+    remember = BooleanField('Remember Me')  # Optional: remember user session
 
+
+class MapForm(FlaskForm):
+    cur_location = StringField('Current Location', validators=[InputRequired()])
+    dest_location = StringField('Destination Location', validators=[InputRequired()])
 
 
 

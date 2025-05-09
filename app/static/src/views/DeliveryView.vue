@@ -42,7 +42,7 @@
     methods: {
       async fetchMapConfig() {
         try {
-          const response = await fetch('http://localhost:7000/api/map-config');
+          const response = await fetch('/api/map-config');
           const data = await response.json();
           this.apiKey = data.api_key;
           this.mapId = data.map_id;
