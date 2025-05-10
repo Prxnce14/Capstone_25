@@ -5,10 +5,9 @@ from app import app, db, login_manager, log_security_event
 from flask import render_template, request, redirect, url_for, make_response, jsonify, flash, session
 from flask_wtf.csrf import generate_csrf
 from flask_login import login_user, logout_user, current_user, login_required
-from app.forms import UsersForm, DriverForm, RestaurantForm, LoginForm, MapForm
-from app.models import Users
+from app.forms import UsersForm, DriverForm, RestaurantForm, LoginForm, MapForm, OnboardingForm
 from datetime import datetime, timedelta
-from app.models import Users, Driver, Restaurant
+from app.models import Users, Driver, Restaurant, UserPreferences
 from werkzeug.security import check_password_hash
 from flask_jwt_extended import create_access_token
 from app.helpers import convert_to_geojson, get_node_from_location, get_route_segment, haversine, get_nearby_intersections
@@ -111,7 +110,8 @@ def register():
             )
             return jsonify({'error': str(e)}), 500  # Return JSON response for error
     
-    
+
+# Registration route for drivers   
 @app.route('/api/driver/register', methods=['POST'])
 def driver_register():
     if request.method =='POST':
@@ -179,6 +179,7 @@ def driver_register():
             return jsonify({'error': str(e)}), 500 #Return JSON response for error
 
 
+# Registration route for restaurants
 @app.route('/api/restaurant/register', methods=['POST'])
 def restaurant_register():
     if request.method == 'POST':
@@ -373,10 +374,12 @@ def login():
 
 
 
+# Redirect URL based on user type
 def get_redirect_url(user_type):
     """Return the appropriate redirect URL based on user type"""
     if user_type == 'gen_user':
-        return 'gen/dashboard'
+        return 'gen/onboarding'
+        #return 'gen/dashboard'
     elif user_type == 'driver':
         return '/driver/dashboard'
     elif user_type == 'restaurant':
@@ -470,6 +473,198 @@ def map_form():
         
         except Exception as e:
             return jsonify({'error': str(e)}), 500
+
+
+
+# Food perferences onbarding function and route
+
+def create_user_preferences_from_form(user_id, form):
+    """Convert form data to UserPreferences model instance"""
+    
+    # Extract data from nested forms
+    food_prefs = form.food_preferences
+    delivery_prefs = form.delivery_preferences
+    comm_prefs = form.communication_preferences
+    
+    # Build the preferences dictionary
+    prefs_data = {
+        'user_id': user_id,
+        
+        # JSON fields (dynamic lists)
+        'liked_foods': food_prefs.liked_foods.data,
+        'dietary_restrictions': food_prefs.dietary_restrictions.data,
+        'order_times': food_prefs.order_times.data,
+        
+        # Flavor preferences
+        'spice_level': food_prefs.flavor_preferences.spice_level.data,
+        'healthy_level': food_prefs.flavor_preferences.healthy_level.data,
+        'sweet_preference': food_prefs.flavor_preferences.sweet_preference.data,
+        
+        # Meat preferences
+        'chicken': food_prefs.meat_preferences.chicken.data,
+        'fish': food_prefs.meat_preferences.fish.data,
+        'pork': food_prefs.meat_preferences.pork.data,
+        'goat': food_prefs.meat_preferences.goat.data,
+        'beef': food_prefs.meat_preferences.beef.data,
+        'no_meat': food_prefs.meat_preferences.no_meat.data,
+        'other_meat': food_prefs.meat_preferences.other_meat.data,
+        
+        # Budget
+        'budget': food_prefs.budget.data,
+        'additional_notes': food_prefs.additional_notes.data,
+        
+        # Delivery preferences
+        'default_address': delivery_prefs.default_address.data,
+        'delivery_instructions': delivery_prefs.delivery_instructions.data,
+        'preferred_delivery_time': delivery_prefs.preferred_delivery_time.data,
+        
+        # Communication preferences
+        'email_notifications': comm_prefs.email_notifications.data,
+        'sms_notifications': comm_prefs.sms_notifications.data,
+        'promotional_emails': comm_prefs.promotional_emails.data
+    }
+    
+    # Add all the boolean preferences (breakfast, lunch, cooking styles, etc.)
+    boolean_mappings = {
+        # Cooking styles
+        'cooking_jamaican': food_prefs.cooking_styles.jamaican.data,
+        'cooking_indian': food_prefs.cooking_styles.indian.data,
+        'cooking_chinese': food_prefs.cooking_styles.chinese.data,
+        'cooking_african': food_prefs.cooking_styles.african.data,
+        'cooking_vegan_ital': food_prefs.cooking_styles.vegan_ital.data,
+        'cooking_mediterranean': food_prefs.cooking_styles.mediterranean.data,
+        'cooking_italian': food_prefs.cooking_styles.italian.data,
+        
+        # Breakfast items
+        'porridge': food_prefs.breakfast_preferences.porridge.data,
+        'scrambled_eggs': food_prefs.breakfast_preferences.scrambled_eggs.data,
+        'pancakes': food_prefs.breakfast_preferences.pancakes.data,
+        'french_toast': food_prefs.breakfast_preferences.french_toast.data,
+        'waffles': food_prefs.breakfast_preferences.waffles.data,
+        'bacon': food_prefs.breakfast_preferences.bacon.data,
+        'sausage': food_prefs.breakfast_preferences.sausage.data,
+        'sandwich': food_prefs.breakfast_preferences.sandwich.data,
+        
+        # Lunch preferences
+        'fry_chicken': food_prefs.lunch_preferences.fry_chicken.data,
+        'bake_chicken': food_prefs.lunch_preferences.bake_chicken.data,
+        'curry_goat': food_prefs.lunch_preferences.curry_goat.data,
+        'soups': food_prefs.lunch_preferences.soups.data,
+        'steamed_fish': food_prefs.lunch_preferences.steamed_fish.data,
+        'escovitch_fish': food_prefs.lunch_preferences.escovitch_fish.data,
+        'patty': food_prefs.lunch_preferences.patty.data,
+        'sandwiches': food_prefs.lunch_preferences.sandwiches.data,
+        'pasta': food_prefs.lunch_preferences.pasta.data,
+        
+        # Juice preferences
+        'pine_ginger': food_prefs.juice_preferences.pine_ginger.data,
+        'callallo_juice': food_prefs.juice_preferences.callallo.data,
+        'june_plum': food_prefs.juice_preferences.june_plum.data,
+        'guava_pine': food_prefs.juice_preferences.guava_pine.data,
+        'beet_root': food_prefs.juice_preferences.beet_root.data,
+        'orange_juice': food_prefs.juice_preferences.orange.data,
+    }
+    
+    # Handle popular Jamaican breakfast items (FieldList)
+    if food_prefs.popular_preferences and len(food_prefs.popular_preferences) > 0:
+        popular_form = food_prefs.popular_preferences[0]
+        popular_mappings = {
+            'ackee_saltfish': popular_form.ackee_saltfish.data,
+            'callaloo': popular_form.callaloo.data,
+            'cooked_saltfish': popular_form.cooked_saltfish.data,
+            'kidney': popular_form.kidney.data,
+            'liver': popular_form.liver.data,
+            'fried_plantain': popular_form.fried_plantain.data,
+            'dumplings': popular_form.dumplings.data,
+            'festival': popular_form.festival.data,
+            'breadfruit': popular_form.breadfruit.data,
+            'other_breakfast_items': popular_form.other_breakfast_items.data if hasattr(popular_form, 'other_breakfast_items') else None
+        }
+        boolean_mappings.update(popular_mappings)
+    
+    # Add string fields
+    string_mappings = {
+        'other_cooking_style': food_prefs.cooking_styles.other_style.data,
+        'other_breakfast': food_prefs.breakfast_preferences.other_breakfast.data,
+        'other_lunch': food_prefs.lunch_preferences.other_lunch.data,
+        'other_juice': food_prefs.juice_preferences.other_juice.data,
+    }
+    
+    # Combine all mappings
+    prefs_data.update(boolean_mappings)
+    prefs_data.update(string_mappings)
+    
+    # Create and return the UserPreferences instance
+    return UserPreferences(**prefs_data)
+
+
+
+
+@app.route('gen/onboarding', methods=['POST'])
+@login_required
+def onboarding_clean():
+    """Render the onboarding form for general users."""
+
+    if request.method == 'POST':
+        try:
+
+            form = OnboardingForm()
+            
+            if form.validate_on_submit():
+                # Get user ID
+                user_id = current_user.get_id()
+                user_name = current_user.get_username()
+                print("ready to process the onboarding form")
+
+                log_security_event(
+                    app.security_logger, 
+                    request, 
+                    'process_onboarding', 
+                    username=current_user.get_username(),
+                    message=f"Starting onboarding process for user_id: {user_id}",
+                    level=logging.INFO
+                )
+
+                # Use helper function
+                user_prefs = create_user_preferences_from_form(user_id, form)
+                
+                # Save to database
+                db.session.add(user_prefs)
+                db.session.commit()
+
+                # Log successful onboarding
+                # Log registration event
+                log_security_event(
+                    app.security_logger, 
+                    request, 
+                    'onboarding_success', 
+                    user_id, 
+                    username=user_name,
+                    message=f"{user_name} successfully completed onboarding",
+                )
+
+                return jsonify({
+                    "message": f"{user_name}Successfully completed onboarding",
+                })
+                
+                
+            else:
+                errors = form_errors(form)
+
+                # Log form validation failure
+                log_security_event(
+                    app.security_logger, 
+                    request, 
+                    'onboarding_form_validation_failed',
+                    message=str(errors), 
+                    level=logging.WARNING
+                )
+                return jsonify({'errors': errors}), 400
+            
+        except Exception as e:
+            return jsonify({'error': str(e)}), 500
+    
+    
 
 
 
