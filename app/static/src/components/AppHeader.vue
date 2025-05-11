@@ -30,7 +30,7 @@
             <router-link class="nav-link" to="/delivery">Delivery</router-link>
           </li>
           <li class="nav-item">
-            <router-link class="nav-link" to="/restaurantmenu">RestaurantMenu</router-link>
+            <router-link class="nav-link" to="/restaurantmenu">Restaurant_Add_product</router-link>
           </li>
         </ul>
       </div>

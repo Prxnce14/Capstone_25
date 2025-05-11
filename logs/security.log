@@ -85,3 +85,23 @@ WHERE restaurant.display_name = %(display_name_1)s
 2025-05-09 16:45:51 - INFO - [127.0.0.1] - login_success: Olivia22_liv - Gen_user successfully logged in (User ID: 3)
 2025-05-09 17:02:55 - INFO - [127.0.0.1] - login_attempt: CleveSmith - Login attempt initiated
 2025-05-09 17:02:55 - INFO - [127.0.0.1] - login_success: CleveSmith - Driver successfully logged in (User ID: 1)
+2025-05-11 00:33:54 - INFO - [127.0.0.1] - login_attempt: KFCUWI - Login attempt initiated
+2025-05-11 00:33:54 - WARNING - [127.0.0.1] - login_failure: KFCUWI - Invalid username or password
+2025-05-11 00:36:35 - INFO - [127.0.0.1] - registration_success: BurgerKing - restaurant successfully registered (User ID: 3)
+2025-05-11 00:36:55 - INFO - [127.0.0.1] - login_attempt: BurgerKing - Login attempt initiated
+2025-05-11 00:36:56 - INFO - [127.0.0.1] - login_success: BurgerKing - Restaurant successfully logged in (User ID: 3)
+2025-05-11 00:38:11 - INFO - [127.0.0.1] - login_attempt: BurgerKing - Login attempt initiated
+2025-05-11 00:38:12 - INFO - [127.0.0.1] - login_success: BurgerKing - Restaurant successfully logged in (User ID: 3)
+2025-05-11 00:46:55 - INFO - [127.0.0.1] - login_attempt: BurgerKing - Login attempt initiated
+2025-05-11 00:46:56 - INFO - [127.0.0.1] - login_success: BurgerKing - Restaurant successfully logged in (User ID: 3)
+2025-05-11 00:53:33 - INFO - [127.0.0.1] - login_attempt: BurgerKing - Login attempt initiated
+2025-05-11 00:53:34 - INFO - [127.0.0.1] - login_success: BurgerKing - Restaurant successfully logged in (User ID: 3)
+2025-05-11 00:54:40 - INFO - [127.0.0.1] - login_attempt: BurgerKing - Login attempt initiated
+2025-05-11 00:54:41 - INFO - [127.0.0.1] - login_success: BurgerKing - Restaurant successfully logged in (User ID: 3)
+2025-05-11 01:14:52 - INFO - [127.0.0.1] - login_attempt: BurgerKing - Login attempt initiated
+2025-05-11 01:14:53 - INFO - [127.0.0.1] - login_success: BurgerKing - Restaurant successfully logged in (User ID: 3)
+2025-05-11 01:15:23 - INFO - [127.0.0.1] - login_attempt: BurgerKing - Login attempt initiated
+2025-05-11 01:15:24 - INFO - [127.0.0.1] - login_success: BurgerKing - Restaurant successfully logged in (User ID: 3)
+2025-05-11 01:26:12 - INFO - [127.0.0.1] - login_attempt: BurgerKing - Login attempt initiated
+2025-05-11 01:26:13 - INFO - [127.0.0.1] - login_success: BurgerKing - Restaurant successfully logged in (User ID: 3)
+2025-05-11 01:31:31 - INFO - [127.0.0.1] - login_attempt: BurgerKing - Login attempt initiated

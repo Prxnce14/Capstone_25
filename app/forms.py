@@ -48,7 +48,7 @@ class RestaurantForm(FlaskForm):
     store_address = StringField('Restaurant Address ', validators=[InputRequired()])
 
 class RestaurantProduct(FlaskForm):
-    restaurant_id = HiddenField('Restaurant ID', validators=[InputRequired()])
+    
     name = StringField('Product Name', validators=[InputRequired(), length(min=2, max=100)])
     price = FloatField('Price', validators=[InputRequired(), NumberRange(min=0.01)])
     quantity = IntegerField('Quantity', validators=[InputRequired(), NumberRange(min=0)])

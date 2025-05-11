@@ -258,8 +258,13 @@ def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 @app.route('/api/restaurant/products', methods=['POST'])
+@login_required
 def create_product():
     try:
+        # Ensure only restaurant users can create products
+        if not current_user.is_authenticated or current_user.user_type != 'restaurant':
+            return jsonify({'error': 'Only restaurant accounts can create products'}), 403
+
         # Use WTForms to validate the form data
         form = RestaurantProduct(request.form)
         
@@ -279,7 +284,7 @@ def create_product():
             
             # Create a new Product (not RestaurantProduct which is the form)
             new_product = Product(
-                restaurant_id=form.restaurant_id.data,
+                restaurant_id=current_user.get_id(),
                 name=form.name.data,
                 price=form.price.data,
                 quantity=form.quantity.data,
@@ -311,11 +316,48 @@ def create_product():
 # DELETE A PRODUCT
 
 @app.route('/api/restaurant/products/<int:product_id>', methods=['DELETE'])
+@login_required  # Add this decorator for security
 def delete_product(product_id):
-    product = RestaurantProduct.query.get_or_404(product_id)
-    db.session.delete(product)
-    db.session.commit()
-    return jsonify({'message': 'Product deleted successfully'}), 200
+    try:
+        # Get the product
+        product = Product.query.get_or_404(product_id)  # Change from RestaurantProduct to Product
+        
+        # Ensure only the restaurant that owns the product can delete it
+        if current_user.get_id() != str(product.restaurant_id):
+            return jsonify({'error': 'You can only delete your own products'}), 403
+        
+        db.session.delete(product)
+        db.session.commit()
+        return jsonify({'message': 'Product deleted successfully'}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/current-user', methods=['GET'])
+@login_required
+def get_current_user():
+    """Return the current logged-in user information."""
+    try:
+        if current_user.is_authenticated:
+            user_data = {
+                'id': current_user.get_id(),
+                'user_type': current_user.user_type,
+                'username': current_user.get_username()
+            }
+            
+            # Add specific data based on user type
+            if hasattr(current_user, 'store_name'):  # For restaurant users
+                user_data['store_name'] = current_user.store_name
+                user_data['store_address'] = current_user.store_address
+            elif hasattr(current_user, 'firstname'):  # For general users and drivers
+                user_data['firstname'] = current_user.firstname
+                user_data['lastname'] = current_user.lastname
+            
+            return jsonify({'user': user_data}), 200
+        else:
+            return jsonify({'error': 'Not authenticated'}), 401
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 @app.route('/login', methods=['POST', 'GET'])
 #Login route for all users
@@ -446,7 +488,7 @@ def get_redirect_url(user_type):
     elif user_type == 'driver':
         return '/driver/dashboard'
     elif user_type == 'restaurant':
-        return '/restaurant/dashboard'
+        return '/restaurant'
 
 
 

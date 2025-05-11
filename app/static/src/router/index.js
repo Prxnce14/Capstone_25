@@ -7,7 +7,14 @@ import Register_gen_view from '../views/Register_gen_view.vue'
 import LoginView from '../views/LoginView.vue'
 import Register_driver_view from '../views/register_driver_view.vue'
 import Register_restaurant_view from '../views/Register_restaurant_view.vue'
-import RestaurantMenuView from '../views/RestaurantMenuView.vue'
+import Restaurant_Add_Product_View from '../views/Restaurant_Add_Product_View.vue'
+import RestaurantDashboard from '../views/RestaurantDashboard.vue'
+import RestaurantMenu from '../views/RestaurantMenu.vue'
+import RestaurantOrders from '../views/RestaurantOrders.vue'
+import RestaurantSalesReport from '../views/RestaurantSalesReport.vue'
+import RestaurantProfile from '../views/RestaurantProfile.vue'
+import RestaurantSettings from '../views/RestaurantSettings.vue'
+
 
 
 const routes = [
@@ -48,9 +55,39 @@ const routes = [
   },
   {
     path:'/restaurantmenu',
-    name: 'RestaurantMenu',
-    component: RestaurantMenuView
+    name: 'Restaurant_Add_Product',
+    component: Restaurant_Add_Product_View
   },
+  {
+  path: '/restaurant',
+  name: 'restaurant_dashboard',
+  component: RestaurantDashboard 
+},
+{
+  path: '/restaurant/menu',
+  name: 'restaurant_menu',
+  component: RestaurantMenu
+},
+{
+  path: '/restaurant/orders',
+  name: 'restaurant_orders',
+  component: RestaurantOrders
+},
+{
+  path: '/restaurant/sales',
+  name: 'restaurant_sales',
+  component: RestaurantSalesReport
+},
+{
+  path: '/restaurant/profile',
+  name: 'restaurant_profile',
+  component: RestaurantProfile
+},
+{
+  path: '/restaurant/settings',
+  name: 'restaurant_settings',
+  component: RestaurantSettings
+}
 ]
 
 const router = createRouter({

@@ -31,12 +31,12 @@
             <div class="form-row">
               <div class="form-group">
                 <label>Product Name</label>
-                <input v-model="form.name" type="text" placeholder="Spicy Chicken" required />
+                <input v-model="form.name" type="text" placeholder="Big Deal" required />
               </div>
 
               <div class="form-group form-group-half">
                 <label>Price</label>
-                <input v-model.number="form.price" type="number" step="0.01" min="0.01" placeholder="7.99" required />
+                <input v-model.number="form.price" type="number" step="0.01" min="0.01" placeholder="1420" required />
               </div>
 
               <div class="form-group form-group-half">
@@ -60,7 +60,7 @@
             <div class="form-row">
               <div class="form-group">
                 <label>Description</label>
-                <textarea v-model="form.description" maxlength="500" placeholder="Crispy, spicy chicken ."></textarea>
+                <textarea v-model="form.description" maxlength="500" placeholder="- 3 pieces of chicken, 1 regular fries, 1 16oz. drink ."></textarea>
               </div>
             </div>
 
@@ -119,11 +119,7 @@ import axios from 'axios';
 export default {
   props: {
     product: Object,
-    isEditing: Boolean,
-    restaurantId: {
-      type: [String, Number],
-      default: null
-    }
+    isEditing: Boolean
   },
   emits: ['add-product', 'update-product', 'cancel'],
   data() {
@@ -148,13 +144,13 @@ export default {
       message: '',
       isSubmitting: false,
       csrfToken: '',
-      // TEMPORARY: Hardcoded restaurant ID for testing - REMOVE WHEN AUTHENTICATION IS IMPLEMENTED
-      hardcodedRestaurantId: 1 // Change this to a valid restaurant ID from your database
+      currentUser: null
     };
   },
   computed: {
-    effectiveRestaurantId() {
-      return this.restaurantId || this.hardcodedRestaurantId;
+    restaurantId() {
+      // Get the restaurant ID from the current user
+      return this.currentUser?.id || null;
     }
   },
   watch: {
@@ -170,15 +166,37 @@ export default {
     },
   },
   async mounted() {
-    // Fetch CSRF token when component mounts
-    try {
-      const response = await axios.get('/api/csrf-token');
-      this.csrfToken = response.data.csrf_token;
-    } catch (error) {
-      console.error("Failed to fetch CSRF token:", error);
-    }
+    await this.fetchCurrentUser();
+    await this.fetchCsrfToken();
   },
   methods: {
+    async fetchCurrentUser() {
+      try {
+        // This assumes you have a route that returns the current logged-in user
+        const response = await axios.get('/api/current-user');
+        this.currentUser = response.data.user;
+        
+        // Verify the user is a restaurant
+        if (this.currentUser?.user_type !== 'restaurant') {
+          this.errors.push('Only restaurant accounts can add products');
+          this.$router.push('/login'); // Redirect to login if not authenticated as restaurant
+        }
+      } catch (error) {
+        console.error('Error fetching current user:', error);
+        this.errors.push('Authentication error. Please log in again.');
+        this.$router.push('/login');
+      }
+    },
+
+    async fetchCsrfToken() {
+      try {
+        const response = await axios.get('/api/csrf-token');
+        this.csrfToken = response.data.csrf_token;
+      } catch (error) {
+        console.error("Failed to fetch CSRF token:", error);
+      }
+    },
+
     handleFileUpload(e) {
       const file = e.target.files[0];
       if (file) {
@@ -190,8 +208,10 @@ export default {
     createFormData() {
       const formData = new FormData();
       
-      // Include restaurant ID (using either prop or hardcoded for testing)
-      formData.append('restaurant_id', this.effectiveRestaurantId);
+      // Include restaurant ID (from current user)
+      if (this.restaurantId) {
+        formData.append('restaurant_id', this.restaurantId);
+      }
       
       // Append form fields
       for (const key in this.form) {
@@ -216,6 +236,18 @@ export default {
     
     validateForm() {
       this.errors = [];
+      
+      // Check if user is authenticated
+      if (!this.currentUser) {
+        this.errors.push("You must be logged in as a restaurant to add products");
+        return false;
+      }
+      
+      // Verify the user is a restaurant
+      if (this.currentUser?.user_type !== 'restaurant') {
+        this.errors.push("Only restaurant accounts can add products");
+        return false;
+      }
       
       // Check required fields
       const requiredFields = ['name', 'price', 'quantity', 'category'];
@@ -242,7 +274,7 @@ export default {
       }
       
       // Restaurant ID validation
-      if (!this.effectiveRestaurantId) {
+      if (!this.restaurantId) {
         this.errors.push("Restaurant ID is required");
         return false;
       }
