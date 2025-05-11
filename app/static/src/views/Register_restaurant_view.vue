@@ -26,7 +26,7 @@
                     
                     <div class="form-fields">
                         <div class="form-group">
-                            <label for="display_name">Display name</label>
+                            <label for="display_name">Username</label>
                             <input 
                                 type="text" 
                                 id="display_name" 
