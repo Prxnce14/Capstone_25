@@ -7,6 +7,7 @@ import Register_gen_view from '../views/Register_gen_view.vue'
 import LoginView from '../views/LoginView.vue'
 import Register_driver_view from '../views/register_driver_view.vue'
 import Register_restaurant_view from '../views/Register_restaurant_view.vue'
+import Onboarding_view from '../views/Onboarding_view.vue'
 
 
 
@@ -46,6 +47,11 @@ const routes = [
     name: 'register_restaurant',
     component: Register_restaurant_view
   },
+  {
+    path: '/gen/onboarding',
+    name: 'onboarding',
+    component: Onboarding_view
+  }
   
 ]
 

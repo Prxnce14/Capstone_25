@@ -378,7 +378,7 @@ def login():
 def get_redirect_url(user_type):
     """Return the appropriate redirect URL based on user type"""
     if user_type == 'gen_user':
-        return 'gen/onboarding'
+        return '/gen/onboarding'
         #return 'gen/dashboard'
     elif user_type == 'driver':
         return '/driver/dashboard'
@@ -600,7 +600,7 @@ def create_user_preferences_from_form(user_id, form):
 
 
 
-@app.route('gen/onboarding', methods=['POST'])
+@app.route('/gen/onboarding', methods=['POST'])
 @login_required
 def onboarding_clean():
     """Render the onboarding form for general users."""
