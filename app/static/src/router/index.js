@@ -1,4 +1,3 @@
-// In your router/index.js file
 import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
 import AboutView from '../views/AboutView.vue'
@@ -14,8 +13,6 @@ import RestaurantOrders from '../views/RestaurantOrders.vue'
 import RestaurantSalesReport from '../views/RestaurantSalesReport.vue'
 import RestaurantProfile from '../views/RestaurantProfile.vue'
 import RestaurantSettings from '../views/RestaurantSettings.vue'
-
-
 
 const routes = [
   {
@@ -56,43 +53,95 @@ const routes = [
   {
     path:'/restaurantmenu',
     name: 'Restaurant_Add_Product',
-    component: Restaurant_Add_Product_View
+    component: Restaurant_Add_Product_View,
+    meta: { requiresAuth: true, userType: 'restaurant' }
   },
   {
-  path: '/restaurant',
-  name: 'restaurant_dashboard',
-  component: RestaurantDashboard 
-},
-{
-  path: '/restaurant/menu',
-  name: 'restaurant_menu',
-  component: RestaurantMenu
-},
-{
-  path: '/restaurant/orders',
-  name: 'restaurant_orders',
-  component: RestaurantOrders
-},
-{
-  path: '/restaurant/sales',
-  name: 'restaurant_sales',
-  component: RestaurantSalesReport
-},
-{
-  path: '/restaurant/profile',
-  name: 'restaurant_profile',
-  component: RestaurantProfile
-},
-{
-  path: '/restaurant/settings',
-  name: 'restaurant_settings',
-  component: RestaurantSettings
-}
+    path: '/restaurant',
+    name: 'restaurant_dashboard',
+    component: RestaurantDashboard,
+    meta: { requiresAuth: true, userType: 'restaurant' }
+  },
+  {
+    path: '/restaurant/menu',
+    name: 'restaurant_menu',
+    component: RestaurantMenu,
+    meta: { requiresAuth: true, userType: 'restaurant' }
+  },
+  {
+    path: '/restaurant/orders',
+    name: 'restaurant_orders',
+    component: RestaurantOrders,
+    meta: { requiresAuth: true, userType: 'restaurant' }
+  },
+  {
+    path: '/restaurant/sales',
+    name: 'restaurant_sales',
+    component: RestaurantSalesReport,
+    meta: { requiresAuth: true, userType: 'restaurant' }
+  },
+  {
+    path: '/restaurant/profile',
+    name: 'restaurant_profile',
+    component: RestaurantProfile,
+    meta: { requiresAuth: true, userType: 'restaurant' }
+  },
+  {
+    path: '/restaurant/settings',
+    name: 'restaurant_settings',
+    component: RestaurantSettings,
+    meta: { requiresAuth: true, userType: 'restaurant' }
+  }
 ]
 
 const router = createRouter({
   history: createWebHistory(),
   routes
 })
+
+// Navigation guard to protect routes that require authentication
+router.beforeEach((to, from, next) => {
+  const token = localStorage.getItem('access_token');
+  const userType = localStorage.getItem('user_type');
+  const isAuthenticated = !!token;
+  
+  // Check if route requires authentication
+  if (to.matched.some(record => record.meta.requiresAuth)) {
+    if (!isAuthenticated) {
+      // User is not authenticated, redirect to login
+      next({
+        path: '/login',
+        query: { redirect: to.fullPath }
+      });
+    } else if (to.meta.userType && to.meta.userType !== userType) {
+      // User is authenticated but doesn't have the right user type
+      switch (userType) {
+        case 'restaurant':
+          next('/restaurant');
+          break;
+        case 'driver':
+          next('/driver/dashboard');
+          break;
+        case 'gen_user':
+          next('/gen/dashboard');
+          break;
+        default:
+          next('/');
+      }
+    } else {
+      // User is authenticated and has the right user type
+      next();
+    }
+  } else {
+    // Route doesn't require authentication
+    next();
+  }
+});
+
+// Global after hook for analytics or other purposes
+router.afterEach((to, from) => {
+  // Reset scroll position to top
+  window.scrollTo(0, 0);
+});
 
 export default router

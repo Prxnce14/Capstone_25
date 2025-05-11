@@ -33,7 +33,54 @@
 </template>
 
 <script setup>
-// Add any dashboard logic here
+import { ref, onMounted } from 'vue'
+import api from '@/api'
+
+const loading = ref(false)
+const error = ref(null)
+const dashboardData = ref({
+  todayOrders: 0,
+  todayRevenue: 0,
+  menuItems: 0
+})
+
+// Load dashboard data when component mounts
+onMounted(async () => {
+  await loadDashboardData()
+})
+
+// Load dashboard data from the server
+async function loadDashboardData() {
+  loading.value = true
+  error.value = null
+  
+  try {
+    // Try to get dashboard stats and menu items
+    const [statsResponse, menuResponse] = await Promise.all([
+      // You'll need to create these endpoints in your backend
+      api.get('/restaurant/dashboard/stats').catch(() => ({ data: {} })),
+      api.get('/restaurant/products')
+    ])
+    
+    dashboardData.value = {
+      todayOrders: statsResponse.data?.todayOrders || 0,
+      todayRevenue: statsResponse.data?.todayRevenue || 0,
+      menuItems: menuResponse.data?.products?.length || 0
+    }
+  } catch (err) {
+    console.error('Error loading dashboard data:', err)
+    error.value = 'Failed to load dashboard data. Please try again.'
+    
+    // Set default values on error
+    dashboardData.value = {
+      todayOrders: 0,
+      todayRevenue: 0,
+      menuItems: 0
+    }
+  } finally {
+    loading.value = false
+  }
+}
 </script>
 
 <style scoped>

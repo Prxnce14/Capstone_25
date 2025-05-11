@@ -38,6 +38,11 @@
               <li><a class="dropdown-item" href="#" @click.prevent="logout">Logout</a></li>
             </ul>
           </li>
+          
+          <!-- Display restaurant name if available -->
+          <li class="nav-item" v-if="restaurantName">
+            <span class="navbar-text">{{ restaurantName }}</span>
+          </li>
         </ul>
       </div>
     </div>
@@ -45,25 +50,55 @@
 </template>
 
 <script setup>
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import api from '@/api'
 
 const router = useRouter()
+const restaurantName = ref('')
+
+// Fetch restaurant info on component mount
+onMounted(async () => {
+  await fetchRestaurantInfo()
+})
+
+// Fetch restaurant information
+async function fetchRestaurantInfo() {
+  try {
+    console.log('Fetching restaurant info...') // Debug
+    const data = await api.get('/current-user')
+    console.log('Restaurant info response:', data) // Debug
+    
+    if (data.user && data.user.user_type === 'restaurant') {
+      restaurantName.value = data.user.store_name || data.user.username
+    }
+  } catch (error) {
+    console.error('Failed to fetch restaurant info:', error)
+  }
+}
 
 // Logout function
-const logout = () => {
-  // Clear any stored tokens
-  localStorage.removeItem('restaurant_auth_token')
-  localStorage.removeItem('user_type')
-  
-  // Redirect to login page
-  router.push('/login')
+async function logout() {
+  try {
+    // Call logout endpoint
+    await api.post('/logout')
+    
+    // Clear tokens and redirect
+    api.clearAuthTokens()
+    router.push('/login')
+  } catch (error) {
+    console.error('Logout error:', error)
+    // Even if logout fails, clear local data and redirect
+    api.clearAuthTokens()
+    router.push('/login')
+  }
 }
 </script>
 
 <style scoped>
 /* Restaurant navbar styles */
 .pelican-navbar {
-  background-color: #FF8C00; /* Dark Orange - consistent with main navbar */
+  background-color: #FF8C00;
   position: fixed;
   top: 0;
   width: 100%;
@@ -71,25 +106,23 @@ const logout = () => {
 }
 
 .container {
-  padding-left: 2rem;  /* Push logo more to the left */
-  padding-right: 2rem; /* Push nav items more to the right */
+  padding-left: 2rem;
+  padding-right: 2rem;
 }
 
 .navbar-brand {
-  font-size: 1.5rem; /* Increase logo size */
-  color: white !important; /* Ensure logo text is white */
+  font-size: 1.5rem;
+  color: white !important;
 }
 
 .nav-link, .dropdown-toggle {
-  color: white !important; /* Make ALL navbar links white */
+  color: white !important;
 }
 
-/* Add hover effect for consistency */
 .nav-link:hover, .dropdown-toggle:hover {
   color: rgba(255, 255, 255, 0.8) !important;
 }
 
-/* Active link styling */
 .nav-link.active,
 .nav-link.router-link-active {
   color: white !important;
@@ -98,15 +131,19 @@ const logout = () => {
   border-radius: 4px;
 }
 
-/* Make the dropdown menu align better */
 .dropdown-menu {
   margin-top: 0.5rem;
   border-radius: 6px;
 }
 
-/* Style the dropdown items */
 .dropdown-item {
   padding: 0.5rem 1.5rem;
+}
+
+.navbar-text {
+  color: white !important;
+  margin-left: 1rem;
+  font-weight: 500;
 }
 
 /* Ensure proper spacing and layout for mobile */
@@ -119,9 +156,14 @@ const logout = () => {
   .dropdown-menu {
     text-align: center;
   }
+  
+  .navbar-text {
+    display: block;
+    margin-left: 0;
+    margin-top: 0.5rem;
+  }
 }
 
-/* Additional styling for better visual consistency */
 .navbar-toggler {
   border: 1px solid rgba(255, 255, 255, 0.3);
 }

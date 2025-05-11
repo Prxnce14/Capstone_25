@@ -55,25 +55,14 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
+import api from '@/api'
 
+const orders = ref([])
+const loading = ref(false)
+const error = ref(null)
 const filter = ref('all')
-
-// Sample orders - replace with actual data from backend
-const orders = ref([
-  // Sample order structure
-  // {
-  //   id: '001',
-  //   customerName: 'John Doe',
-  //   total: 25.50,
-  //   status: 'pending',
-  //   createdAt: new Date(),
-  //   items: [
-  //     { id: 1, name: 'Burger', quantity: 1, price: 9.99 },
-  //     { id: 2, name: 'Fries', quantity: 2, price: 4.99 }
-  //   ]
-  // }
-])
+const updatingOrder = ref(null)
 
 const filteredOrders = computed(() => {
   if (filter.value === 'all') {
@@ -82,15 +71,46 @@ const filteredOrders = computed(() => {
   return orders.value.filter(order => order.status === filter.value)
 })
 
+onMounted(() => {
+  loadOrders()
+})
+
 const setFilter = (newFilter) => {
   filter.value = newFilter
 }
 
-const updateOrderStatus = (orderId, newStatus) => {
-  const order = orders.value.find(o => o.id === orderId)
-  if (order) {
-    order.status = newStatus
-    // TODO: Send update to backend
+async function loadOrders() {
+  loading.value = true
+  error.value = null
+  
+  try {
+    const response = await api.get('/restaurant/orders')
+    orders.value = response.data?.orders || []
+  } catch (err) {
+    console.error('Error loading orders:', err)
+    error.value = 'Failed to load orders. Please try again.'
+    orders.value = []
+  } finally {
+    loading.value = false
+  }
+}
+
+async function updateOrderStatus(orderId, newStatus) {
+  updatingOrder.value = orderId
+  
+  try {
+    await api.put(`/restaurant/orders/${orderId}`, { status: newStatus })
+    
+    // Update local order status
+    const orderIndex = orders.value.findIndex(o => o.id === orderId)
+    if (orderIndex !== -1) {
+      orders.value[orderIndex].status = newStatus
+    }
+  } catch (err) {
+    console.error('Error updating order status:', err)
+    error.value = 'Failed to update order status. Please try again.'
+  } finally {
+    updatingOrder.value = null
   }
 }
 

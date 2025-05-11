@@ -102,7 +102,7 @@
           </div>
 
           <div class="form-actions">
-            <button type="button" class="btn-cancel" @click="$emit('cancel')">Cancel</button>
+            <button type="button" class="btn-cancel" @click="cancelForm">Cancel</button>
             <button type="submit" class="btn-submit" :disabled="isSubmitting">
               {{ isSubmitting ? 'Saving...' : (isEditing ? 'Update Product' : 'Add Product') }}
             </button>
@@ -114,7 +114,7 @@
 </template>
 
 <script>
-import axios from 'axios';
+import api from '@/api';
 
 export default {
   props: {
@@ -143,13 +143,11 @@ export default {
       errors: [],
       message: '',
       isSubmitting: false,
-      csrfToken: '',
       currentUser: null
     };
   },
   computed: {
     restaurantId() {
-      // Get the restaurant ID from the current user
       return this.currentUser?.id || null;
     }
   },
@@ -157,7 +155,6 @@ export default {
     product: {
       handler(newVal) {
         if (newVal) {
-          // Deep copy to avoid mutating the prop
           this.form = JSON.parse(JSON.stringify(newVal));
           this.imagePreview = newVal.image_url || '';
         }
@@ -166,34 +163,49 @@ export default {
     },
   },
   async mounted() {
-    await this.fetchCurrentUser();
-    await this.fetchCsrfToken();
+    try {
+      await this.fetchCurrentUser();
+    } catch (error) {
+      console.error('Error during component initialization:', error);
+      this.errors.push('Failed to initialize component. Please try again.');
+      // Don't redirect here to avoid potential redirect loops
+    }
   },
   methods: {
     async fetchCurrentUser() {
       try {
-        // This assumes you have a route that returns the current logged-in user
-        const response = await axios.get('/api/current-user');
-        this.currentUser = response.data.user;
+        console.log('Fetching current user...');
         
-        // Verify the user is a restaurant
+        // Get CSRF token first
+        try {
+          const csrfResponse = await api.get('/csrf-token');
+          sessionStorage.setItem('csrf_token', csrfResponse.csrf_token);
+        } catch (csrfError) {
+          console.error('Error fetching CSRF token:', csrfError);
+        }
+        
+        // Now fetch the current user
+        const response = await api.get('/current-user');
+        console.log('Current user response:', response);
+        
+        // Check if response and response.user exist
+        if (!response || !response.user) {
+          console.error('Invalid user response format:', response);
+          this.errors.push('Invalid user response from server');
+          this.$router.push('/login');
+          return;
+        }
+        
+        this.currentUser = response.user;
+        
         if (this.currentUser?.user_type !== 'restaurant') {
           this.errors.push('Only restaurant accounts can add products');
-          this.$router.push('/login'); // Redirect to login if not authenticated as restaurant
+          this.$router.push('/login');
         }
       } catch (error) {
         console.error('Error fetching current user:', error);
         this.errors.push('Authentication error. Please log in again.');
         this.$router.push('/login');
-      }
-    },
-
-    async fetchCsrfToken() {
-      try {
-        const response = await axios.get('/api/csrf-token');
-        this.csrfToken = response.data.csrf_token;
-      } catch (error) {
-        console.error("Failed to fetch CSRF token:", error);
       }
     },
 
@@ -208,17 +220,13 @@ export default {
     createFormData() {
       const formData = new FormData();
       
-      // Include restaurant ID (from current user)
       if (this.restaurantId) {
         formData.append('restaurant_id', this.restaurantId);
       }
       
-      // Append form fields
       for (const key in this.form) {
         if (this.form[key] !== null && this.form[key] !== undefined) {
-          // Handle boolean values properly
           if (typeof this.form[key] === 'boolean') {
-            // Always send boolean values as actual booleans
             formData.append(key, this.form[key]);
           } else {
             formData.append(key, this.form[key]);
@@ -226,7 +234,6 @@ export default {
         }
       }
       
-      // Append the image file if available
       if (this.imageFile) {
         formData.append('image', this.imageFile);
       }
@@ -237,19 +244,16 @@ export default {
     validateForm() {
       this.errors = [];
       
-      // Check if user is authenticated
       if (!this.currentUser) {
         this.errors.push("You must be logged in as a restaurant to add products");
         return false;
       }
       
-      // Verify the user is a restaurant
       if (this.currentUser?.user_type !== 'restaurant') {
         this.errors.push("Only restaurant accounts can add products");
         return false;
       }
       
-      // Check required fields
       const requiredFields = ['name', 'price', 'quantity', 'category'];
       const missingFields = requiredFields.filter(field => {
         const value = this.form[field];
@@ -261,19 +265,16 @@ export default {
         return false;
       }
       
-      // Price validation
       if (this.form.price <= 0) {
         this.errors.push("Price must be greater than zero");
         return false;
       }
       
-      // Quantity validation
       if (this.form.quantity < 0) {
         this.errors.push("Quantity cannot be negative");
         return false;
       }
       
-      // Restaurant ID validation
       if (!this.restaurantId) {
         this.errors.push("Restaurant ID is required");
         return false;
@@ -290,7 +291,6 @@ export default {
     },
     
     resetForm() {
-      // Reset form to initial state
       this.form = {
         name: '',
         price: null,
@@ -312,35 +312,24 @@ export default {
     
     async handleSubmit() {
       try {
-        // Validate the form
         if (!this.validateForm()) {
-          return; // Stop submission if validation fails
+          return;
         }
         
         this.isSubmitting = true;
         
-        // Create FormData
         const formData = this.createFormData();
-
-        // Determine the correct API endpoint
         const url = this.isEditing 
-          ? `/api/restaurant/products/${this.form.id}`
-          : '/api/restaurant/products';
+          ? `/restaurant/products/${this.form.id}`
+          : '/restaurant/products';
         
-        const config = {
-          headers: {}
-        };
+        console.log('Submitting form to:', url);
+        console.log('Form data:', Object.fromEntries(formData.entries()));
         
-        // Add CSRF token if available
-        if (this.csrfToken) {
-          config.headers['X-CSRFToken'] = this.csrfToken;
-        }
+        const response = await api.post(url, formData, true); // true for FormData
+        console.log('Submit response:', response);
         
-        // Submit the form
-        const response = await axios.post(url, formData, config);
-
-        // Handle successful response
-        const productData = response.data.product || response.data;
+        const productData = response.product || response;
         
         if (this.isEditing) {
           this.$emit('update-product', productData);
@@ -353,11 +342,10 @@ export default {
       } catch (err) {
         console.error('Error submitting form:', err);
         
-        // Handle errors
         if (err.response) {
           const errorData = err.response.data;
-          const errorMessage = errorData.error || errorData.message || 
-            `Server error: ${err.response.status} - ${err.response.statusText}`;
+          const errorMessage = errorData?.error || errorData?.message || 
+            `Server error: ${err.response.status || 'unknown'}`;
           this.errors.push(errorMessage);
         } else if (err.request) {
           this.errors.push("Network error. Please check your connection and try again.");
@@ -367,6 +355,10 @@ export default {
       } finally {
         this.isSubmitting = false;
       }
+    },
+    
+    cancelForm() {
+      this.$router.push('/restaurant/menu');
     },
   },
 };
