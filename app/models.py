@@ -6,9 +6,11 @@ import pytz
 from datetime import datetime
 from werkzeug.security import generate_password_hash
 from sqlalchemy import UniqueConstraint
+from flask_login import UserMixin
 
 
-class Users(db.Model):
+
+class Users(db.Model, UserMixin):
 
     __tablename__ = 'users'
 
@@ -62,7 +64,7 @@ class Users(db.Model):
     
 
     
-class Driver(db.Model):
+class Driver(db.Model, UserMixin):
     __tablename__ = 'driver'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -116,7 +118,7 @@ class Driver(db.Model):
     
 
 
-class Restaurant(db.Model):
+class Restaurant(db.Model, UserMixin):
     __tablename__ = 'restaurant'
 
     id = db.Column(db.Integer, primary_key = True)

@@ -31,6 +31,28 @@ login_manager.login_view = 'login'
 # JWTManager initialization
 jwt = JWTManager(app)
 
+@login_manager.user_loader
+def load_user(user_id):
+    from app.models import Users, Driver, Restaurant
+    
+    # Try to find the user in Users table
+    user = Users.query.get(user_id)
+    if user:
+        return user
+    
+    # Try to find in Driver table
+    driver = Driver.query.get(user_id)
+    if driver:
+        return driver
+    
+    # Try to find in Restaurant table
+    restaurant = Restaurant.query.get(user_id)
+    if restaurant:
+        return restaurant
+    
+    # User not found
+    return None
+
 
 # Setup security logger
 def setup_security_logger(app):

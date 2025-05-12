@@ -532,7 +532,6 @@ def create_user_preferences_from_form(user_id, form):
         'cooking_chinese': food_prefs.cooking_styles.chinese.data,
         'cooking_african': food_prefs.cooking_styles.african.data,
         'cooking_vegan_ital': food_prefs.cooking_styles.vegan_ital.data,
-        'cooking_mediterranean': food_prefs.cooking_styles.mediterranean.data,
         'cooking_italian': food_prefs.cooking_styles.italian.data,
         
         # Breakfast items
@@ -600,7 +599,7 @@ def create_user_preferences_from_form(user_id, form):
 
 
 
-@app.route('/gen/onboarding', methods=['POST'])
+@app.route('/api/gen/onboarding', methods=['POST'])
 @login_required
 def onboarding_clean():
     """Render the onboarding form for general users."""
