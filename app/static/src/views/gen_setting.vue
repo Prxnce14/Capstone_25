@@ -1025,9 +1025,9 @@ const showErrorMessage = (message) => {
 </script>
 
 <style scoped>
-.restaurant-settings {
+.user-settings {
   padding: 20px;
-  max-width: 1400px;
+  max-width: 1200px;
   margin: 0 auto;
 }
 
@@ -1067,13 +1067,13 @@ const showErrorMessage = (message) => {
 
 .settings-nav a:hover {
   background: #e9ecef;
-  color: #FF8C00;
+  color: #4a6de5;
 }
 
 .settings-nav a.active {
-  background: #fff3e0;
-  color: #FF8C00;
-  border-left-color: #FF8C00;
+  background: #e9ecef;
+  color: #4a6de5;
+  border-left-color: #4a6de5;
 }
 
 .settings-nav svg {
@@ -1088,7 +1088,7 @@ const showErrorMessage = (message) => {
 }
 
 .settings-section {
-  max-width: 800px;
+  max-width: 700px;
 }
 
 .settings-section h2 {
@@ -1098,7 +1098,7 @@ const showErrorMessage = (message) => {
 }
 
 .settings-section h3 {
-  margin: 0 0 15px 0;
+  margin: 20px 0 15px 0;
   color: #495057;
   font-size: 18px;
 }
@@ -1121,34 +1121,45 @@ const showErrorMessage = (message) => {
 }
 
 .form-control {
-  padding: 8px 12px;
+  padding: 10px 12px;
   border: 1px solid #ced4da;
   border-radius: 4px;
   transition: border-color 0.3s;
+  font-size: 14px;
 }
 
 .form-control:focus {
   outline: none;
-  border-color: #FF8C00;
-  box-shadow: 0 0 0 0.2rem rgba(255, 140, 0, 0.25);
+  border-color: #4a6de5;
+  box-shadow: 0 0 0 0.2rem rgba(74, 109, 229, 0.25);
+}
+
+.form-row {
+  display: flex;
+  gap: 15px;
+}
+
+.form-row .form-group {
+  flex: 1;
 }
 
 .btn {
-  padding: 8px 16px;
+  padding: 10px 16px;
   border: none;
   border-radius: 4px;
   cursor: pointer;
   transition: all 0.3s;
   font-size: 14px;
+  font-weight: 500;
 }
 
 .btn-primary {
-  background: #FF8C00;
+  background: #4a6de5;
   color: white;
 }
 
 .btn-primary:hover {
-  background: #e67e00;
+  background: #3a5bd5;
 }
 
 .btn-secondary {
@@ -1160,8 +1171,17 @@ const showErrorMessage = (message) => {
   background: #5a6268;
 }
 
+.btn-danger {
+  background: #dc3545;
+  color: white;
+}
+
+.btn-danger:hover {
+  background: #c82333;
+}
+
 .btn-sm {
-  padding: 4px 8px;
+  padding: 6px 10px;
   font-size: 12px;
 }
 
@@ -1175,11 +1195,33 @@ const showErrorMessage = (message) => {
   color: white;
 }
 
+.btn:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+/* Profile settings */
+.profile-image-container {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 10px;
+}
+
+.profile-image {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid #ced4da;
+}
+
 /* Notification Settings */
 .notification-categories {
   display: flex;
   flex-direction: column;
   gap: 30px;
+  margin-bottom: 30px;
 }
 
 .notification-group {
@@ -1191,14 +1233,14 @@ const showErrorMessage = (message) => {
 .notification-options {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
   margin-top: 10px;
 }
 
 .checkbox-label {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   cursor: pointer;
 }
 
@@ -1213,85 +1255,165 @@ const showErrorMessage = (message) => {
 
 .security-section {
   margin-bottom: 40px;
+  padding-bottom: 30px;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.login-sessions {
+  margin-top: 15px;
+}
+
+.session-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px;
+  background: #f8f9fa;
+  border-radius: 6px;
+  margin-bottom: 10px;
+}
+
+.device-name {
+  font-weight: 500;
+  margin-bottom: 5px;
+}
+
+.session-details {
+  color: #6c757d;
+  font-size: 13px;
+}
+
+.session-details span {
+  margin-right: 5px;
+}
+
+/* Payment Methods */
+.payment-methods-list {
+  margin-top: 20px;
+}
+
+.payment-method-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px;
+  background: #f8f9fa;
+  border-radius: 6px;
+  margin-bottom: 10px;
+}
+
+.payment-method-info {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.payment-card-icon {
+  font-size: 24px;
+  color:rgb(224, 115, 12);
+}
+
+.payment-type {
+  font-weight: 500;
+  margin-bottom: 5px;
+}
+
+.payment-number, .payment-expiry {
+  color: #6c757d;
+  font-size: 13px;
+}
+
+.payment-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.default-badge {
+  background:rgb(224, 115, 12);
+  color: white;
+  font-size: 12px;
+  padding: 3px 8px;
+  border-radius: 4px;
+}
+
+.no-payment-methods {
+  background: #f8f9fa;
+  border-radius: 6px;
+  padding: 20px;
+  text-align: center;
+  color: #6c757d;
+}
+
+/* Preferences */
+.preference-group {
+  margin-bottom: 30px;
   padding-bottom: 20px;
   border-bottom: 1px solid #e9ecef;
 }
 
-.login-history-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 15px;
+/* Addresses */
+.address-list {
+  margin-top: 20px;
 }
 
-.login-history-table th,
-.login-history-table td {
-  padding: 12px;
-  text-align: left;
+.address-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px;
+  background: #f8f9fa;
+  border-radius: 6px;
+  margin-bottom: 10px;
+}
+
+.address-name {
+  font-weight: 500;
+  margin-bottom: 5px;
+}
+
+.address-details {
+  color: #6c757d;
+  font-size: 14px;
+}
+
+.address-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.no-addresses {
+  background: #f8f9fa;
+  border-radius: 6px;
+  padding: 20px;
+  text-align: center;
+  color: #6c757d;
+}
+
+/* Privacy */
+.privacy-group {
+  margin-bottom: 30px;
+  padding-bottom: 20px;
   border-bottom: 1px solid #e9ecef;
 }
 
-.login-history-table th {
-  background: #f8f9fa;
-  font-weight: 600;
-  color: #495057;
+.privacy-description {
+  color: #6c757d;
+  margin-bottom: 15px;
 }
 
-/* Payment Settings */
-.payment-methods {
-  margin-bottom: 40px;
-}
-
-.payment-options {
+.privacy-options {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  margin-top: 10px;
-}
-
-.bank-details {
-  padding-top: 20px;
-  border-top: 1px solid #e9ecef;
-}
-
-/* Staff Management */
-.staff-actions {
+  gap: 12px;
   margin-bottom: 20px;
 }
 
-.staff-table {
-  width: 100%;
-  border-collapse: collapse;
+.data-actions {
+  display: flex;
+  gap: 15px;
   margin-top: 15px;
-}
-
-.staff-table th,
-.staff-table td {
-  padding: 12px;
-  text-align: left;
-  border-bottom: 1px solid #e9ecef;
-}
-
-.staff-table th {
-  background: #f8f9fa;
-  font-weight: 600;
-  color: #495057;
-}
-
-.status-badge {
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 12px;
-  text-transform: capitalize;
-}
-
-.status-badge.active {
-  background: #d4edda;
-  color: #155724;
-}
-
-.status-badge.inactive {
-  background: #f8d7da;
-  color: #721c24;
 }
 
 /* Modal Styles */
@@ -1314,6 +1436,8 @@ const showErrorMessage = (message) => {
   border-radius: 8px;
   width: 500px;
   max-width: 90vw;
+  max-height: 90vh;
+  overflow-y: auto;
 }
 
 .modal h3 {
@@ -1326,50 +1450,14 @@ const showErrorMessage = (message) => {
   margin-top: 20px;
 }
 
-/* Tax Settings */
-.tax-settings {
-  margin-bottom: 40px;
+.danger-modal {
+  border-top: 5px solid #dc3545;
 }
 
-.tax-exemptions {
-  margin-top: 40px;
-  padding-top: 20px;
-  border-top: 1px solid #e9ecef;
-}
-
-.exemption-items {
-  margin-top: 15px;
-}
-
-.exemption-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 10px;
-  background: #f8f9fa;
-  border-radius: 4px;
-  margin-bottom: 10px;
-}
-
-/* Advanced Settings */
-.advanced-options {
-  display: flex;
-  flex-direction: column;
-  gap: 40px;
-}
-
-.advanced-group {
-  padding-bottom: 20px;
-  border-bottom: 1px solid #e9ecef;
-}
-
-.api-key-container {
-  display: flex;
-  gap: 10px;
-}
-
-.api-key-container .form-control {
-  flex: 1;
+.warning-text {
+  color: #dc3545;
+  font-weight: 500;
+  margin-bottom: 20px;
 }
 
 /* Responsive Design */
@@ -1400,7 +1488,8 @@ const showErrorMessage = (message) => {
     border-left: none;
     border-bottom: 3px solid transparent;
   }
-  
+
+
   .settings-nav a.active {
     border-left: none;
     border-bottom-color: #FF8C00;
@@ -1415,15 +1504,8 @@ const showErrorMessage = (message) => {
   .restaurant-settings {
     padding: 10px;
   }
-  
-  .staff-table,
-  .login-history-table {
-    display: block;
-    overflow-x: auto;
-    white-space: nowrap;
-  }
-  
-  .modal {
+
+ .modal {
     padding: 20px;
   }
 }
