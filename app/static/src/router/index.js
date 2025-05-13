@@ -17,6 +17,11 @@ import RestaurantSettings from '../views/RestaurantSettings.vue'
 import GenUser_Dashboard from '../views/GenUser_Dashboard.vue'
 import Gen_Order from '../views/Gen_Order.vue'
 import Gen_Setting from '../views/gen_setting.vue'
+import Onboarding_view from '../views/Onboarding_view.vue'
+import User_Dashboard from '../views/User_Dashboard.vue'
+
+
+
 const routes = [
   {
     path: '/',
@@ -102,11 +107,6 @@ const routes = [
     meta: { requiresAuth: true, userType: 'restaurant' }
   },
   {
-    path: '/gen/dashboard',
-    name: 'gen_dashboard',
-    component: GenUser_Dashboard,
-  },
-  {
     path: '/orders',
     name: 'gen_orders',
     component: Gen_Order,
@@ -115,6 +115,17 @@ const routes = [
     path: '/settings',
     name: 'gen_setting',
     component: Gen_Setting,
+  },
+  {
+    path: '/gen/onboarding',
+    name: 'onboarding',
+    component: Onboarding_view
+
+  },
+  {
+    path: '/gen/dashboard',
+    name: 'dashboard',
+    component: User_Dashboard
   }
   
 ]
