@@ -32,3 +32,4 @@ WTForms==3.2.1
 haversine
 requests
 geojson
+--only-binary :all: scikit-surprise

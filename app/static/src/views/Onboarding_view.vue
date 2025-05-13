@@ -940,7 +940,7 @@ function submitForm() {
         }, 1500);
       } else {
         setTimeout(() => {
-          router.push('/dashboard');
+          router.push('/gen/dashboard');
         }, 1500);
       }
     })

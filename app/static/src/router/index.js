@@ -8,6 +8,7 @@ import LoginView from '../views/LoginView.vue'
 import Register_driver_view from '../views/register_driver_view.vue'
 import Register_restaurant_view from '../views/Register_restaurant_view.vue'
 import Onboarding_view from '../views/Onboarding_view.vue'
+import User_Dashboard from '../views/User_Dashboard.vue'
 
 
 
@@ -51,6 +52,11 @@ const routes = [
     path: '/gen/onboarding',
     name: 'onboarding',
     component: Onboarding_view
+  },
+  {
+    path: '/gen/dashboard',
+    name: 'dashboard',
+    component: User_Dashboard
   }
   
 ]

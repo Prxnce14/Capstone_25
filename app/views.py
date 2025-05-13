@@ -8,11 +8,13 @@ from flask_login import login_user, logout_user, current_user, login_required
 from app.forms import UsersForm, DriverForm, RestaurantForm, LoginForm, MapForm, OnboardingForm
 from datetime import datetime, timedelta
 from app.models import Users, Driver, Restaurant, UserPreferences
+from functools import wraps
 from werkzeug.security import check_password_hash
 from flask_jwt_extended import create_access_token
 from app.helpers import convert_to_geojson, get_node_from_location, get_route_segment, haversine, get_nearby_intersections
 from app.helpers import get_traffic_factor, current_time
 from app.locations import a_star
+from app.recommendation_helper import get_user_food_recommendations
 
 
 
@@ -662,7 +664,50 @@ def onboarding_clean():
             
         except Exception as e:
             return jsonify({'error': str(e)}), 500
-    
+
+
+# Endpoint for user reccoommendations
+@app.route('/api/gen/recommendations', methods=['GET'])
+@login_required
+def get_food_recommendations():
+    """Get personalized food recommendations based on user's stored preferences"""
+    try:
+        # Get current user ID
+        user_id = current_user.get_id()
+        username = current_user.get_username()
+        
+        # Get number of recommendations per category
+        count = request.args.get('count', 3, type=int)
+        
+        # Get recommendations using our helper function
+        recommendations = get_user_food_recommendations(user_id, n=count)
+        
+        # Log successful recommendation retrieval
+        log_security_event(
+            app.security_logger,
+            request,
+            'recommendations_retrieved',
+            username=username,
+            message=f"Retrieved food recommendations for user_id: {user_id}",
+            level=logging.INFO
+        )
+        
+        return jsonify({
+            "user_id": user_id,
+            "username": username,
+            "recommendations": recommendations
+        })
+        
+    except Exception as e:
+        # Log error
+        log_security_event(
+            app.security_logger,
+            request,
+            'recommendations_error',
+            message=str(e),
+            level=logging.ERROR
+        )
+        return jsonify({'error': str(e)}), 500
     
 
 
