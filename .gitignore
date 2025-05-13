@@ -20,14 +20,14 @@ venv/
 .env
 .flaskenv
 
-#Docker files
-docker-compose.yml
-Dockerfile.backend
-Dockerfile.frontend
-entrypoint.sh
 
 # uploads 
 uploads/
 
 
+<<<<<<< HEAD
 logs/*
+=======
+# logs directory
+logs/*
+>>>>>>> 45e5d1738df52051deb85954426f45b04ea11f82

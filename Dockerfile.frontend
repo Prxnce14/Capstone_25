@@ -1,0 +1,26 @@
+FROM node:18-alpine
+
+WORKDIR /app
+
+# Copy package files and install dependencies into the working directory
+COPY package*.json ./ 
+
+# Install the dependencies from package.json
+RUN npm install
+
+# Copt the remaining application code
+COPY . ./app/
+
+#Expose the port vite is running on
+EXPOSE 5173
+
+# Add this line before the ENTRYPOINT line
+COPY entrypoint.sh /entrypoint.sh
+# Make sure the entrypoint is executable
+RUN chmod +x /entrypoint.sh
+
+# Start the development server with proper host binding
+# CMD ["npm", "run", "dev", "--", "--host", "${HOST}"] exec form 
+
+
+ENTRYPOINT ["/entrypoint.sh"]
