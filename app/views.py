@@ -309,14 +309,26 @@ def create_product():
         if form.validate():
             # Handle image upload
             image_url = form.image_url.data
+            
             if form.image_file.data and allowed_file(form.image_file.data.filename):
                 filename = secure_filename(form.image_file.data.filename)
                 unique_name = f"{uuid.uuid4().hex}_{filename}"
-                image_path = os.path.join(app.config['UPLOAD_FOLDER'], unique_name)
+                
+                # Get the full path to the uploads directory
+                uploads_path = os.path.join(app.static_folder, 'uploads')
+                image_path = os.path.join(uploads_path, unique_name)
+                
+                # Make sure directory exists
+                os.makedirs(uploads_path, exist_ok=True)
+                
+                app.logger.debug(f"Saving image to: {image_path}")
                 form.image_file.data.save(image_path)
-                image_url = f"/uploads/{unique_name}"
+                
+                # Use a URL that will work with static files
+                image_url = f"/static/uploads/{unique_name}"
+                app.logger.debug(f"Image URL saved to database: {image_url}")
             
-            # Create a new Product
+            # Create product with the image URL
             new_product = Product(
                 restaurant_id=current_user_id,
                 name=form.name.data,
@@ -336,19 +348,26 @@ def create_product():
             db.session.add(new_product)
             db.session.commit()
             
+            # Log the created product details
+            app.logger.info(f"Product created: {new_product.name}, image URL: {new_product.image_url}")
+            
             return jsonify({
                 'message': 'Product created successfully', 
                 'product': new_product.to_dict()
             }), 201
         else:
+            app.logger.warning(f"Product validation failed: {form.errors}")
             return jsonify({'error': 'Validation failed', 'errors': form.errors}), 400
             
     except Exception as e:
         db.session.rollback()
-        app.logger.error(f"Error creating product: {str(e)}")
+        # Get detailed error information including stack trace
+        import traceback
+        error_trace = traceback.format_exc()
+        app.logger.error(f"Error creating product: {str(e)}\n{error_trace}")
         return jsonify({'error': 'Internal server error'}), 500
 
-# Update the delete_product endpoint
+#  delete_product endpoint
 @app.route('/api/restaurant/products/<int:product_id>', methods=['DELETE'])
 @jwt_required()
 def delete_product(product_id):
@@ -376,6 +395,97 @@ def delete_product(product_id):
         app.logger.error(f"Error deleting product: {str(e)}")
         return jsonify({'error': 'Internal server error'}), 500
 
+# Edit Product endpoint 
+
+@app.route('/api/restaurant/products/<int:product_id>', methods=['GET', 'PUT'])
+@jwt_required()
+def product_details(product_id):
+    try:
+        current_user_id = get_jwt_identity()
+        jwt_claims = get_jwt()
+        user_type = jwt_claims.get('user_type')
+        
+        # Get the product
+        product = Product.query.get_or_404(product_id)
+        
+        if request.method == 'GET':
+            # Anyone can view product details
+            return jsonify({'product': product.to_dict()}), 200
+            
+        elif request.method == 'PUT':
+            # Only restaurant owners can update their own products
+            if user_type != 'restaurant':
+                return jsonify({'error': 'Only restaurant accounts can update products'}), 403
+                
+            if str(product.restaurant_id) != str(current_user_id):
+                return jsonify({'error': 'You can only update your own products'}), 403
+            
+            # Use WTForms to validate the form data
+            form = RestaurantProduct(request.form)
+            
+            # For file uploads, we need to add it manually since it's not part of request.form
+            if 'image' in request.files:
+                form.image_file.data = request.files['image']
+            
+            if form.validate():
+                # Update product fields
+                product.name = form.name.data
+                product.price = form.price.data
+                product.quantity = form.quantity.data
+                
+                # Handle image update
+                if form.image_file.data and allowed_file(form.image_file.data.filename):
+                    filename = secure_filename(form.image_file.data.filename)
+                    unique_name = f"{uuid.uuid4().hex}_{filename}"
+                    image_path = os.path.join(app.config['UPLOAD_FOLDER'], unique_name)
+                    form.image_file.data.save(image_path)
+                    product.image_url = f"/uploads/{unique_name}"
+                elif form.image_url.data:
+                    product.image_url = form.image_url.data
+                
+                product.description = form.description.data
+                product.category = form.category.data
+                product.is_vegetarian = form.is_vegetarian.data
+                product.is_vegan = form.is_vegan.data
+                product.is_gluten_free = form.is_gluten_free.data
+                product.is_featured = form.is_featured.data
+                product.discount_percentage = form.discount_percentage.data or 0
+                product.minimum_stock = form.minimum_stock.data or 0
+                
+                db.session.commit()
+                
+                return jsonify({
+                    'message': 'Product updated successfully', 
+                    'product': product.to_dict()
+                }), 200
+            else:
+                return jsonify({'error': 'Validation failed', 'errors': form.errors}), 400
+                
+    except Exception as e:
+        db.session.rollback()
+        app.logger.error(f"Error handling product: {str(e)}")
+        return jsonify({'error': 'Internal server error'}), 500
+    
+# General user view all products
+
+@app.route('/api/menu/products', methods=['GET'])
+def get_menu_products():
+    try:
+        # Get all products (or filter by restaurant ID if provided in query params)
+        restaurant_id = request.args.get('restaurant_id')
+        
+        if restaurant_id:
+            products = Product.query.filter_by(restaurant_id=restaurant_id).all()
+        else:
+            # Get all products from all restaurants if no specific restaurant requested
+            products = Product.query.all()
+        
+        return jsonify({
+            'products': [product.to_dict() for product in products]
+        }), 200
+    except Exception as e:
+        app.logger.error(f"Error getting menu products: {str(e)}")
+        return jsonify({'error': 'Internal server error'}), 500
 
 @app.route('/api/current-user', methods=['GET'])
 @jwt_required()
@@ -762,10 +872,7 @@ def login():
             )
             return jsonify({'error': str(e)}), 500  # Return JSON response for error
 
-@app.route('/api/placeholder/<int:width>/<int:height>', methods=['GET'])
-def placeholder_image_simple(width, height):
-    """Redirect to a public placeholder service."""
-    return redirect(f"https://via.placeholder.com/{width}x{height}")
+
 
 # Add logout endpoint
 @app.route('/api/logout', methods=['POST'])

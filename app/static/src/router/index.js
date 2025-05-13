@@ -13,7 +13,9 @@ import RestaurantOrders from '../views/RestaurantOrders.vue'
 import RestaurantSalesReport from '../views/RestaurantSalesReport.vue'
 import RestaurantProfile from '../views/RestaurantProfile.vue'
 import RestaurantSettings from '../views/RestaurantSettings.vue'
-
+import GenUser_Dashboard from '../views/GenUser_Dashboard.vue'
+import Gen_Order from '../views/Gen_Order.vue'
+import Gen_Setting from '../views/gen_setting.vue'
 const routes = [
   {
     path: '/',
@@ -91,7 +93,23 @@ const routes = [
     name: 'restaurant_settings',
     component: RestaurantSettings,
     meta: { requiresAuth: true, userType: 'restaurant' }
+  },
+  {
+    path: '/gen/dashboard',
+    name: 'gen_dashboard',
+    component: GenUser_Dashboard,
+  },
+  {
+    path: '/orders',
+    name: 'gen_orders',
+    component: Gen_Order,
+  },
+  {
+    path: '/settings',
+    name: 'gen_setting',
+    component: Gen_Setting,
   }
+  
 ]
 
 const router = createRouter({

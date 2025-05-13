@@ -19,7 +19,9 @@ app.config.from_object(Config)
 csrf = CSRFProtect(app)
 
 # Create uploads folder if it doesn't exist
-os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+uploads_path = os.path.join(app.static_folder, 'uploads')
+os.makedirs(uploads_path, exist_ok=True)
+app.logger.info(f"Using upload folder: {uploads_path}")
 
 # Configure CORS - apply to all routes by default
 CORS(app, resources={r"/*": {"origins": "*"}})  # For development; restrict origins in production

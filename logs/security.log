@@ -144,3 +144,39 @@ WHERE restaurant.display_name = %(display_name_1)s
 2025-05-11 16:43:53 - INFO - [127.0.0.1] - registration_success: NardosUwi - restaurant successfully registered (User ID: 4)
 2025-05-11 16:52:05 - INFO - [127.0.0.1] - login_attempt: NardosUwi - Login attempt initiated
 2025-05-11 16:52:06 - INFO - [127.0.0.1] - login_success: NardosUwi - Restaurant successfully logged in (User ID: 4)
+2025-05-11 19:40:54 - INFO - [127.0.0.1] - logout: NardosUwi - restaurant logged out (User ID: 4)
+2025-05-11 19:41:07 - INFO - [127.0.0.1] - login_attempt: NardosUwi - Login attempt initiated
+2025-05-11 19:41:07 - INFO - [127.0.0.1] - login_success: NardosUwi - Restaurant successfully logged in (User ID: 4)
+2025-05-11 19:41:43 - INFO - [127.0.0.1] - logout: NardosUwi - restaurant logged out (User ID: 4)
+2025-05-11 19:41:57 - INFO - [127.0.0.1] - login_attempt: BurgerKing - Login attempt initiated
+2025-05-11 19:41:57 - INFO - [127.0.0.1] - login_success: BurgerKing - Restaurant successfully logged in (User ID: 3)
+2025-05-11 23:47:11 - INFO - [127.0.0.1] - logout: BurgerKing - restaurant logged out (User ID: 3)
+2025-05-12 00:15:54 - INFO - [127.0.0.1] - login_attempt: BurgerKing - Login attempt initiated
+2025-05-12 00:15:56 - WARNING - [127.0.0.1] - login_failure: BurgerKing - Invalid username or password
+2025-05-12 00:16:16 - INFO - [127.0.0.1] - login_attempt: BurgerKing - Login attempt initiated
+2025-05-12 00:16:17 - INFO - [127.0.0.1] - login_success: BurgerKing - Restaurant successfully logged in (User ID: 3)
+2025-05-12 00:17:35 - INFO - [127.0.0.1] - logout: BurgerKing - restaurant logged out (User ID: 3)
+2025-05-12 00:18:10 - INFO - [127.0.0.1] - login_attempt: NardosUwi - Login attempt initiated
+2025-05-12 00:18:12 - INFO - [127.0.0.1] - login_success: NardosUwi - Restaurant successfully logged in (User ID: 4)
+2025-05-12 01:23:05 - INFO - [127.0.0.1] - logout: NardosUwi - restaurant logged out (User ID: 4)
+2025-05-12 10:25:31 - INFO - [127.0.0.1] - login_attempt: BurgerKing - Login attempt initiated
+2025-05-12 10:25:32 - INFO - [127.0.0.1] - login_success: BurgerKing - Restaurant successfully logged in (User ID: 3)
+2025-05-12 10:25:55 - INFO - [127.0.0.1] - logout: BurgerKing - restaurant logged out (User ID: 3)
+2025-05-12 10:26:08 - INFO - [127.0.0.1] - login_attempt: NardosUwi - Login attempt initiated
+2025-05-12 10:26:09 - WARNING - [127.0.0.1] - login_failure: NardosUwi - Invalid username or password
+2025-05-12 10:26:13 - INFO - [127.0.0.1] - login_attempt: NardosUwi - Login attempt initiated
+2025-05-12 10:26:15 - INFO - [127.0.0.1] - login_success: NardosUwi - Restaurant successfully logged in (User ID: 4)
+2025-05-12 10:49:33 - INFO - [127.0.0.1] - login_attempt: BurgerKing - Login attempt initiated
+2025-05-12 10:49:34 - WARNING - [127.0.0.1] - login_failure: BurgerKing - Invalid username or password
+2025-05-12 10:49:44 - INFO - [127.0.0.1] - login_attempt: BurgerKing - Login attempt initiated
+2025-05-12 10:49:45 - INFO - [127.0.0.1] - login_success: BurgerKing - Restaurant successfully logged in (User ID: 3)
+2025-05-12 10:54:52 - INFO - [127.0.0.1] - login_attempt: BurgerKing - Login attempt initiated
+2025-05-12 10:54:53 - INFO - [127.0.0.1] - login_success: BurgerKing - Restaurant successfully logged in (User ID: 3)
+2025-05-12 10:58:27 - INFO - [127.0.0.1] - logout: BurgerKing - restaurant logged out (User ID: 3)
+2025-05-12 11:01:39 - INFO - [127.0.0.1] - login_attempt: BurgerKing - Login attempt initiated
+2025-05-12 11:01:40 - INFO - [127.0.0.1] - login_success: BurgerKing - Restaurant successfully logged in (User ID: 3)
+2025-05-13 08:00:42 - INFO - [127.0.0.1] - registration_success: liv__livia22 - User successfully registered (User ID: 4)
+2025-05-13 08:00:57 - INFO - [127.0.0.1] - login_attempt: liv__livia22 - Login attempt initiated
+2025-05-13 08:00:57 - INFO - [127.0.0.1] - login_success: liv__livia22 - Gen_user successfully logged in (User ID: 4)
+2025-05-13 08:17:46 - INFO - [127.0.0.1] - login_attempt: liv__livia22 - Login attempt initiated
+2025-05-13 08:17:47 - INFO - [127.0.0.1] - login_success: liv__livia22 - Gen_user successfully logged in (User ID: 4)
