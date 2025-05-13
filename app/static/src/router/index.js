@@ -7,6 +7,7 @@ import LoginView from '../views/LoginView.vue'
 import Register_driver_view from '../views/register_driver_view.vue'
 import Register_restaurant_view from '../views/Register_restaurant_view.vue'
 import Restaurant_Add_Product_View from '../views/Restaurant_Add_Product_View.vue'
+import Restaurant_Edit_Product_View from '../views/Restaurant_Edit_Product_View.vue'
 import RestaurantDashboard from '../views/RestaurantDashboard.vue'
 import RestaurantMenu from '../views/RestaurantMenu.vue'
 import RestaurantOrders from '../views/RestaurantOrders.vue'
@@ -56,6 +57,12 @@ const routes = [
     path:'/restaurantmenu',
     name: 'Restaurant_Add_Product',
     component: Restaurant_Add_Product_View,
+    meta: { requiresAuth: true, userType: 'restaurant' }
+  },
+  {
+    path:'/restaurantmenu/edit',
+    name: 'Restaurant_Edit_Product',
+    component: Restaurant_Edit_Product_View,
     meta: { requiresAuth: true, userType: 'restaurant' }
   },
   {

@@ -180,3 +180,8 @@ WHERE restaurant.display_name = %(display_name_1)s
 2025-05-13 08:00:57 - INFO - [127.0.0.1] - login_success: liv__livia22 - Gen_user successfully logged in (User ID: 4)
 2025-05-13 08:17:46 - INFO - [127.0.0.1] - login_attempt: liv__livia22 - Login attempt initiated
 2025-05-13 08:17:47 - INFO - [127.0.0.1] - login_success: liv__livia22 - Gen_user successfully logged in (User ID: 4)
+2025-05-13 11:39:19 - INFO - [127.0.0.1] - login_attempt: BurgerKing - Login attempt initiated
+2025-05-13 11:39:20 - INFO - [127.0.0.1] - login_success: BurgerKing - Restaurant successfully logged in (User ID: 3)
+2025-05-13 11:43:24 - INFO - [127.0.0.1] - logout: BurgerKing - restaurant logged out (User ID: 3)
+2025-05-13 11:43:32 - INFO - [127.0.0.1] - login_attempt: liv__livia22 - Login attempt initiated
+2025-05-13 11:43:32 - INFO - [127.0.0.1] - login_success: liv__livia22 - Gen_user successfully logged in (User ID: 4)
