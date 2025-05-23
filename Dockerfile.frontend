@@ -15,12 +15,12 @@ COPY . ./app/
 EXPOSE 5173
 
 # Add this line before the ENTRYPOINT line
-COPY entrypoint.sh /entrypoint.sh
+COPY ./entrypoints.sh /app/entrypoints.sh
 # Make sure the entrypoint is executable
-RUN chmod +x /entrypoint.sh
+RUN chmod +x /app/entrypoints.sh
 
 # Start the development server with proper host binding
 # CMD ["npm", "run", "dev", "--", "--host", "${HOST}"] exec form 
 
 
-ENTRYPOINT ["/entrypoint.sh"]
+ENTRYPOINT ["/app/entrypoints.sh"]

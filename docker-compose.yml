@@ -3,7 +3,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.backend
-    image: prxnce14/my-web-app-backend:v0.1.1
+    image: prxnce14/my-web-app-backend:v0.1.9
     ports:
       - "${FLASK_RUN_PORT}:${FLASK_RUN_PORT}"
     volumes:
@@ -17,7 +17,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.frontend
-    image: prxnce14/my-web-app-frontend:v0.1.1
+    image: prxnce14/my-web-app-frontend:v0.1.9
     ports:
       - "5173:5173"
     volumes:

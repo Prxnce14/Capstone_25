@@ -11,6 +11,7 @@ ___
 $ python -m venv venv (you may need to use python3 instead)
 $ source venv/Scripts/activate (or .\venv\Scripts\activate on Windows)
 $ pip install -r requirements.txt
+$ flask db upgrade.  In the event you get an error regarding conflicting heads, merge them and re-run command
 $ flask --app app run
 ```
 
@@ -47,11 +48,11 @@ docker login -u <username>
 #### Pull code from docker
 
 ````sh
-docker pull prxnce14/my-web-app-backend:v0.1.0
+docker pull prxnce14/my-web-app-backend:v0.1.9
 ````
 
 ````sh
-docker pull prxnce14/my-web-app-frontend:v0.1.0
+docker pull prxnce14/my-web-app-frontend:v0.1.9
 ````
 
 #### Running containers using docker-compose 
@@ -85,12 +86,12 @@ Add this file to the directory you're running from
 ##### Run container - Backend, Frontend
 
 ````sh
-docker run -d --restart always -p 7000:7000 --env-file .env --name pelicanEATS-backend -v data_volume:/var/lib/psql prxnce14/my-web-app-backend:v0.1.0
+docker run -d --restart always -p 7000:7000 --env-file .env --name pelicanEATS-backend -v data_volume:/var/lib/psql prxnce14/my-web-app-backend:v0.1.9
 ````
 
 
 ````sh
-docker run -d --restart always -p 5173:5173 --env-file .env --name pelicanEATS-frontend prxnce14/my-web-app-frontend:v0.1.0
+docker run -d --restart always -p 5173:5173 --env-file .env --name pelicanEATS-frontend prxnce14/my-web-app-frontend:v0.1.9
 ````
 
 

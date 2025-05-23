@@ -2,11 +2,11 @@
 # Add any form classes for Flask-WTF here
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField, FileRequired, FileAllowed
-from wtforms import StringField, TextAreaField, SelectField, PasswordField, HiddenField, BooleanField, IntergerField
-from wtforms.validators import InputRequired, Email, DataRequired, length
-from wtforms.validators import InputRequired, Email, DataRequired, length, NumberRange, Optional, URL
 
-from wtforms import StringField, TextAreaField, SelectField, PasswordField, HiddenField, BooleanField, IntegerField, FieldList, FormField
+from wtforms.validators import InputRequired, Email, DataRequired, length
+from wtforms.validators import InputRequired, Email, DataRequired, length, NumberRange, Optional, URL, Length
+
+from wtforms import StringField, TextAreaField, SelectField, PasswordField, HiddenField, BooleanField, IntegerField, FieldList, FormField, FloatField
 
 
 #This is the name that will bbe displayed above your input fields

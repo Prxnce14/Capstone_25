@@ -1,5 +1,5 @@
 #Docker files
-docker-compose.yml
-Dockerfile.backend
-Dockerfile.frontend
-entrypoint.sh
+# docker-compose.yml
+# Dockerfile.backend
+# Dockerfile.frontend
+# entrypoint.sh

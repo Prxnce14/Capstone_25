@@ -20,8 +20,8 @@ MarkupSafe==3.0.2
 numpy
 pandas 
 scikit-learn
-psycopg2==2.9.10
-#psycopg2-binary
+#psycopg2==2.9.10
+psycopg2-binary
 PyJWT
 python-dotenv==1.1.0
 pytz==2025.2
