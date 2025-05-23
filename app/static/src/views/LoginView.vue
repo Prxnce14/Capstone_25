@@ -51,7 +51,11 @@
                         </div>
 
                         <div class="form-group remember-group">
+<<<<<<< HEAD
                             <input type="checkbox" id="remember" v-model="formData.remember">
+=======
+                            <input type="checkbox" id="remember" v-model="formData.remember" name="remember">
+>>>>>>> Shauna
                             <label for="remember" class="remember-label">
                                 Remember me
                             </label>
@@ -84,6 +88,7 @@
 <script setup>
     import { ref, onMounted, reactive } from "vue";
     import { useRouter } from 'vue-router';
+    import api from '@/api';
 
     const router = useRouter();
 
@@ -99,31 +104,27 @@
     let errors = ref([]);
     let isSubmitting = ref(false);
     
-    function getCsrfToken() {
-        fetch('/api/csrf-token')
-        .then((response) => response.json())
-        .then((data) => {
-            console.log(data);
+    async function getCsrfToken() {
+        try {
+            console.log('Fetching CSRF token...');
+            const data = await api.get('/csrf-token');
+            console.log('CSRF token received:', data);
             csrf_token.value = data.csrf_token;
-        })
-        .catch(error => {
+            // Store CSRF token for future requests
+            sessionStorage.setItem('csrf_token', data.csrf_token);
+        } catch (error) {
             console.error("Failed to fetch CSRF token:", error);
             errors.value.push("Server connection issue. Please try again later.");
-        });
+        }
     }
 
     onMounted(() => {
         getCsrfToken();
         
-        // Set up event listeners to sync form data with the input fields
-        const form = document.getElementById('loginform');
-        if (form) {
-            form.addEventListener('input', (event) => {
-                if (event.target.name && event.target.name in formData) {
-                    formData[event.target.name] = event.target.value;
-                }
-            });
-        }
+        // Clear any existing tokens on login page
+        localStorage.removeItem('access_token');
+        localStorage.removeItem('user_type');
+        localStorage.removeItem('user_id');
     });
 
     // Function to validate the form
@@ -145,7 +146,7 @@
     }
 
     // Function to login a user
-    function login() {
+    async function login() {
         // Clear previous messages
         message.value = "";
         
@@ -156,57 +157,62 @@
 
         isSubmitting.value = true;
 
-        // Create FormData 
-        let form = document.querySelector("#loginform");
-        let form_data = new FormData(form);
+        try {
+            // Create FormData 
+            let form = document.querySelector("#loginform");
+            let form_data = new FormData(form);
 
-        fetch("/api/login", {
+            console.log('Sending login request...');
+            console.log('CSRF Token being sent:', csrf_token.value);
+
+            const response = await fetch("/api/login", {
                 method: 'POST',
                 body: form_data,
                 headers: {
                     'X-CSRFToken': csrf_token.value
-                }
-        })
-        .then(function (response) { 
-            return response.json().then(data => {
-                if (!response.ok) {
-                    // For error responses, throw the error with the server message
-                    throw new Error(data.error || 'Login failed');
-                }
-                return data;
+                },
+                credentials: 'include'
             });
-        }) 
-        .then(function (data) {
-            console.log(data);
+
+            const data = await response.json();
+            console.log('Login response:', data);
+            
+            if (!response.ok) {
+                throw new Error(data.error || 'Login failed');
+            }
             
             // Set success message
             message.value = data.message || "You have successfully logged in!";
             
-            // Store token in localStorage
+            // Store tokens and user info using our API helper
             if (data.access_token) {
-                localStorage.setItem('access_token', data.access_token);
-                
-                // Store user info if needed
+                console.log('Access token received, storing...');
+                api.setAuthTokens(data.access_token, csrf_token.value);
                 localStorage.setItem('user_id', data.id);
                 localStorage.setItem('user_type', data.user_type);
+                
+                // Verify tokens are stored
+                console.log('Stored tokens:');
+                console.log('- access_token:', localStorage.getItem('access_token') ? 'Present' : 'Missing');
+                console.log('- user_type:', localStorage.getItem('user_type'));
+                console.log('- csrf_token:', sessionStorage.getItem('csrf_token') ? 'Present' : 'Missing');
             }
             
             // Redirect based on user type
             if (data.redirect) {
+                console.log('Redirecting to:', data.redirect);
                 // Allow the success message to be seen briefly before redirecting
                 setTimeout(() => {
                     router.push(data.redirect);
                 }, 1000);
             }
-        })
-        .catch(function (error) {
-            console.log(error);
+        } catch (error) {
+            console.error('Login error:', error);
             // Display specific error message
             errors.value.push(error.message);
-        })
-        .finally(() => {
+        } finally {
             isSubmitting.value = false;
-        });
+        }
     }
 </script>
 

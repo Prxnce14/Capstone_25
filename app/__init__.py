@@ -4,6 +4,15 @@ from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
 from .config import Config
 from flask_wtf.csrf import CSRFProtect
+import os
+from flask import send_from_directory
+
+from flask_login import LoginManager
+from flask_jwt_extended import JWTManager  # Import JWTManager
+import os
+import logging
+from logging.handlers import RotatingFileHandler
+
 
 from flask_login import LoginManager
 from flask_jwt_extended import JWTManager  # Import JWTManager
@@ -15,6 +24,12 @@ from logging.handlers import RotatingFileHandler
 app = Flask(__name__)
 app.config.from_object(Config)
 csrf = CSRFProtect(app)
+
+# Create uploads folder if it doesn't exist
+uploads_path = os.path.join(app.static_folder, 'uploads')
+os.makedirs(uploads_path, exist_ok=True)
+app.logger.info(f"Using upload folder: {uploads_path}")
+
 # Configure CORS - apply to all routes by default
 CORS(app, resources={r"/*": {"origins": "*"}})  # For development; restrict origins in production
 
@@ -22,6 +37,11 @@ db = SQLAlchemy(app)
 # Instantiate Flask-Migrate library here
 migrate = Migrate(app, db)
 
+#Route to serve uploaded images
+
+@app.route('/uploads/<filename>')
+def uploaded_file(filename):
+    return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
 
 # Flask-Login login manager
 login_manager = LoginManager()

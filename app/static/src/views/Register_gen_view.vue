@@ -508,7 +508,7 @@
 
 /* Form wrapper */
 .form-wrapper {
-    width: 450px;
+    width: 6000px;
     background-color: white;
     border-radius: 8px;
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
@@ -599,7 +599,7 @@ h1 {
     cursor: not-allowed;
 }
 
-.login-link {
+.login-link {   
     font-size: 0.8rem;
     color: #666;
 }
