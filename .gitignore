@@ -25,9 +25,3 @@ venv/
 uploads/
 
 
-<<<<<<< HEAD
-logs/*
-=======
-# logs directory
-logs/*
->>>>>>> 45e5d1738df52051deb85954426f45b04ea11f82
